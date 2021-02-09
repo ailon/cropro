@@ -1,0 +1,7 @@
+node_modules/*
+dist/*
+build-dev/*
+dts/*
+docs/*
+
+yarn-error.log

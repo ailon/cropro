@@ -1,0 +1,8 @@
+{
+  "entryPoints": ["./src/index.ts"],
+  "out": "docs",
+  "name": "Class Reference",
+  "disableSources": "true",
+  "excludeExternals": "true",
+  "readme": "none"
+}
