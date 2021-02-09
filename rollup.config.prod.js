@@ -5,6 +5,7 @@ import dts from 'rollup-plugin-dts';
 import { terser } from 'rollup-plugin-terser';
 import generatePackageJson from 'rollup-plugin-generate-package-json';
 import copy from 'rollup-plugin-copy';
+import svgo from 'rollup-plugin-svgo';
 
 const outputDir = './dist/';
 const globalName = pkg.name; // replace if your package name is not compatible
@@ -31,6 +32,7 @@ export default [{
       rootDir: './src/', 
       exclude: ['./test/**/*', './dts/**/*', './dist/**/*'] 
     }),
+    svgo()
   ]
 }, {
   input: "./dts/index.d.ts",
@@ -63,6 +65,7 @@ export default [{
       }
     }),
     typescript(),
+    svgo(),
     terser(),
     copy({
       targets: [{
