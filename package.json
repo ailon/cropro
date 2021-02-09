@@ -20,6 +20,7 @@
   "dependencies": {},
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.1.1",
+    "@types/resize-observer-browser": "^0.1.5",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
     "@typescript-eslint/parser": "^4.14.2",
     "eslint": "^7.19.0",

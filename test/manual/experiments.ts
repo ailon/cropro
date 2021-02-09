@@ -1,13 +1,17 @@
-import { LibDemo } from '../../src';
+import { CropArea } from '../../src';
 
 export class Experiments {
-  public addHelloToBody() {
-    const ld = new LibDemo();
-    ld.addHello(document.body);
+  public showCropArea(target: HTMLImageElement): void {
+    const ca = new CropArea(target);
+    ca.displayMode = 'popup';
+    ca.show();
   }
 }
 
-window.addEventListener('DOMContentLoaded', (event) => {
+window.addEventListener('DOMContentLoaded', () => {
+  const targetImg = document.getElementById('testImage1') as HTMLImageElement;
   const experiments = new Experiments();
-  experiments.addHelloToBody();
+  targetImg.addEventListener('click', () =>
+    experiments.showCropArea(targetImg)
+  );
 });
