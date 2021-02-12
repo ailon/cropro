@@ -4,11 +4,21 @@ import { CropAreaState } from './CropAreaState';
 
 import Logo from './assets/markerjs-logo-m.svg';
 import { IPoint } from './core/IPoint';
+import { StyleClass, StyleManager, StyleRule } from './core/Style';
+import { Toolbar } from './core/Toolbar';
+import { ToolbarButtonBlock } from './core/ToolbarButtonBlock';
+import { ToolbarButton } from './core/ToolbarButton';
+
+import CheckIcon from './assets/toolbar-icons/check.svg';
+import CloseIcon from './assets/toolbar-icons/close.svg';
 
 /**
  * Event handler type for {@linkcode MarkerArea} `render` event.
  */
-export type RenderEventHandler = (dataURL: string, state?: CropAreaState) => void;
+export type RenderEventHandler = (
+  dataURL: string,
+  state?: CropAreaState
+) => void;
 /**
  * Event handler type for {@linkcode MarkerArea} `close` event.
  */
@@ -40,7 +50,22 @@ export class CropArea {
   private editingTarget: HTMLImageElement;
 
   private logoUI: HTMLElement;
-  
+
+  private static instanceCounter = 0;
+  private _instanceNo: number;
+  public get instanceNo(): number {
+    return this._instanceNo;
+  }
+
+  private styleManager: StyleManager;
+
+  private toolbarStyleClass: StyleClass;
+  private toolbarStyleColorsClass: StyleClass;
+  private toolbarBlockStyleClass: StyleClass;
+  private toolbarButtonStyleColorsClass: StyleClass;
+  private toolbarActiveButtonStyleColorsClass: StyleClass;
+  private toolbarButtonStyleClass: StyleClass;
+
   /**
    * `targetRoot` is used to set an alternative positioning root for the UI.
    *
@@ -54,7 +79,7 @@ export class CropArea {
    * @default document.body
    */
   public targetRoot: HTMLElement;
-  
+
   // for preserving orginal window state before opening the editor
   private bodyOverflowState: string;
   private scrollYState: number;
@@ -64,6 +89,10 @@ export class CropArea {
   private closeEventListeners: CloseEventHandler[] = [];
 
   private _isOpen = false;
+
+  private topToolbar: Toolbar;
+  private bottomToolbar: Toolbar;
+
   /**
    * Returns `true` when CropArea is open and `false` otherwise.
    *
@@ -107,7 +136,7 @@ export class CropArea {
   /**
    * Base height of the toolbar block in pixels.
    */
-  toolbarHeight?: number;
+  toolbarHeight = 40;
 
   /**
    * Creates a new CropArea for the specified target image.
@@ -120,6 +149,10 @@ export class CropArea {
    * @param target image object to crop.
    */
   constructor(target: HTMLImageElement) {
+    this._instanceNo = CropArea.instanceCounter++;
+
+    this.styleManager = new StyleManager(this.instanceNo);
+
     this.target = target;
     this.targetRoot = document.body;
 
@@ -258,11 +291,16 @@ export class CropArea {
       this.targetObserver.observe(this.target);
     } else if (this.displayMode === 'popup') {
       this.targetObserver = new ResizeObserver(() => {
-        const ratio = 1.0 * this.target.clientWidth / this.target.clientHeight;
-        const newWidth = this.editorCanvas.clientWidth / ratio > this.editorCanvas.clientHeight ?
-          this.editorCanvas.clientHeight * ratio : this.editorCanvas.clientWidth;
-        const newHeight = newWidth < this.editorCanvas.clientWidth ?
-          this.editorCanvas.clientHeight : this.editorCanvas.clientWidth / ratio;
+        const ratio =
+          (1.0 * this.target.clientWidth) / this.target.clientHeight;
+        const newWidth =
+          this.editorCanvas.clientWidth / ratio > this.editorCanvas.clientHeight
+            ? this.editorCanvas.clientHeight * ratio
+            : this.editorCanvas.clientWidth;
+        const newHeight =
+          newWidth < this.editorCanvas.clientWidth
+            ? this.editorCanvas.clientHeight
+            : this.editorCanvas.clientWidth / ratio;
         this.resize(newWidth, newHeight);
       });
       this.targetObserver.observe(this.editorCanvas);
@@ -288,16 +326,10 @@ export class CropArea {
     this.editingTarget.style.height = `${this.imageHeight}px`;
 
     this.cropImage.setAttribute('width', this.imageWidth.toString());
-    this.cropImage.setAttribute(
-      'height',
-      this.imageHeight.toString()
-    );
+    this.cropImage.setAttribute('height', this.imageHeight.toString());
     this.cropImage.setAttribute(
       'viewBox',
-      '0 0 ' +
-        this.imageWidth.toString() +
-        ' ' +
-        this.imageHeight.toString()
+      '0 0 ' + this.imageWidth.toString() + ' ' + this.imageHeight.toString()
     );
 
     this.cropImageHolder.style.width = `${this.imageWidth}px`;
@@ -347,16 +379,10 @@ export class CropArea {
     );
     this.cropImage.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     this.cropImage.setAttribute('width', this.imageWidth.toString());
-    this.cropImage.setAttribute(
-      'height',
-      this.imageHeight.toString()
-    );
+    this.cropImage.setAttribute('height', this.imageHeight.toString());
     this.cropImage.setAttribute(
       'viewBox',
-      '0 0 ' +
-        this.imageWidth.toString() +
-        ' ' +
-        this.imageHeight.toString()
+      '0 0 ' + this.imageWidth.toString() + ' ' + this.imageHeight.toString()
     );
     this.cropImage.style.pointerEvents = 'auto';
 
@@ -383,7 +409,7 @@ export class CropArea {
     this.cropImage.addEventListener('pointerdown', this.onPointerDown);
     window.addEventListener('pointermove', this.onPointerMove);
     window.addEventListener('pointerup', this.onPointerUp);
-    window.addEventListener('resize', this.onWindowResize)
+    window.addEventListener('resize', this.onWindowResize);
   }
 
   /**
@@ -451,18 +477,20 @@ export class CropArea {
   }
 
   private showUI(): void {
+    this.addStyles();
+
     if (this.displayMode === 'popup') {
       this.overrideOverflow();
     }
 
     this.coverDiv = document.createElement('div');
-    
+
     // @todo
     // this.coverDiv.className = Style.CLASS_PREFIX;
 
     // hardcode font size so nothing inside is affected by higher up settings
     this.coverDiv.style.fontSize = '16px';
-    switch(this.displayMode) {
+    switch (this.displayMode) {
       case 'inline': {
         this.coverDiv.style.position = 'absolute';
         const coverTop =
@@ -496,11 +524,16 @@ export class CropArea {
     this.uiDiv.style.display = 'flex';
     this.uiDiv.style.flexDirection = 'column';
     this.uiDiv.style.flexGrow = '2';
-    this.uiDiv.style.margin = this.displayMode === 'popup' ? `${this.popupMargin}px` : '0px';
+    this.uiDiv.style.margin =
+      this.displayMode === 'popup' ? `${this.popupMargin}px` : '0px';
     this.uiDiv.style.border = '0px';
     // this.uiDiv.style.overflow = 'hidden';
     //this.uiDiv.style.backgroundColor = '#ffffff';
     this.coverDiv.appendChild(this.uiDiv);
+
+    this.addToolbars();
+
+    this.uiDiv.appendChild(this.topToolbar.getUI());
 
     // @todo
     // this.toolbar = new Toolbar(this.uiDiv, this.settings.displayMode, this._availableMarkerTypes, this.uiStyleSettings);
@@ -515,11 +548,14 @@ export class CropArea {
     // @todo
     // this.contentDiv.style.backgroundColor = this.uiStyleSettings.canvasBackgroundColor;
     if (this.displayMode === 'popup') {
-      this.contentDiv.style.maxHeight = `${this.windowHeight -
-        this.popupMargin * 2 - this.toolbarHeight * 3.5}px`;
+      this.contentDiv.style.maxHeight = `${
+        this.windowHeight - this.popupMargin * 2 - this.toolbarHeight * 3.5
+      }px`;
       // this.contentDiv.style.maxHeight = `calc(100vh - ${
       //   this.settings.popupMargin * 2 + this.uiStyleSettings.toolbarHeight * 3.5}px)`;
-      this.contentDiv.style.maxWidth = `calc(100vw - ${this.popupMargin * 2}px)`;
+      this.contentDiv.style.maxWidth = `calc(100vw - ${
+        this.popupMargin * 2
+      }px)`;
     }
     this.uiDiv.appendChild(this.contentDiv);
 
@@ -544,6 +580,36 @@ export class CropArea {
     // this.toolbox.show();
   }
 
+  private addToolbars() {
+    this.topToolbar = new Toolbar();
+    this.topToolbar.className = this.toolbarStyleClass.name;
+    this.topToolbar.colorsClassName = this.toolbarStyleColorsClass.name;
+    this.topToolbar.fadeInClassName = this.styleManager.fadeInAnimationClassName;
+
+    this.topToolbar.blockClassName = this.toolbarBlockStyleClass.name;
+    
+    this.topToolbar.buttonClassName = this.toolbarButtonStyleClass.name;
+    this.topToolbar.buttonColorsClassName = this.toolbarButtonStyleColorsClass.name;
+
+    const actionBlock = new ToolbarButtonBlock();
+    this.topToolbar.addBlock(actionBlock);
+
+    actionBlock.addButton(
+      new ToolbarButton(
+        CheckIcon,
+        'OK',
+        () => this.closeUI()
+      )
+    );
+    actionBlock.addButton(
+      new ToolbarButton(
+        CloseIcon,
+        'Close',
+        () => this.closeUI()
+      )
+    );
+  }
+
   private closeUI() {
     if (this.displayMode === 'popup') {
       this.restoreOverflow();
@@ -559,7 +625,7 @@ export class CropArea {
   public getState(): CropAreaState {
     const result: CropAreaState = {
       width: this.imageWidth,
-      height: this.imageHeight
+      height: this.imageHeight,
     };
     return result;
   }
@@ -580,10 +646,12 @@ export class CropArea {
    */
   public restoreState(state: CropAreaState): void {
     if (
-      state.width && state.height
-      && (state.width !== this.imageWidth || state.height !== this.imageHeight)) {
-        // @todo
-        // this.scaleMarkers(this.imageWidth / state.width, this.imageHeight / state.height);
+      state.width &&
+      state.height &&
+      (state.width !== this.imageWidth || state.height !== this.imageHeight)
+    ) {
+      // @todo
+      // this.scaleMarkers(this.imageWidth / state.width, this.imageHeight / state.height);
     }
   }
 
@@ -613,7 +681,7 @@ export class CropArea {
 
   private positionUI() {
     this.setTopLeft();
-    switch(this.displayMode) {
+    switch (this.displayMode) {
       case 'inline': {
         const coverTop =
           this.target.offsetTop > this.toolbarHeight
@@ -628,12 +696,110 @@ export class CropArea {
         this.coverDiv.style.left = '0px';
         this.coverDiv.style.width = '100vw';
         this.coverDiv.style.height = `${this.windowHeight}px`;
-        this.contentDiv.style.maxHeight = `${this.windowHeight -
-          this.popupMargin * 2 - this.toolbarHeight * 3.5}px`;
+        this.contentDiv.style.maxHeight = `${
+          this.windowHeight - this.popupMargin * 2 - this.toolbarHeight * 3.5
+        }px`;
       }
     }
     this.positionCropImage();
     this.positionLogo();
   }
 
+  private addStyles() {
+    this.toolbarStyleClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar',
+        `
+      width: 100%;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;      
+      height: ${this.toolbarHeight}px;
+      box-sizing: content-box;
+      ${
+        this.displayMode === 'inline'
+          ? `border-top-left-radius: ${Math.round(this.toolbarHeight / 10)}px;`
+          : ''
+      }
+      ${
+        this.displayMode === 'inline'
+          ? `border-top-right-radius: ${Math.round(this.toolbarHeight / 10)}px;`
+          : ''
+      }
+      overflow: hidden;
+    `
+      )
+    );
+
+    this.toolbarStyleColorsClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar_colors',
+        `
+      background-color: ${this.styleManager.settings.toolbarBackgroundColor};
+      box-shadow: 0px 3px rgba(33, 33, 33, 0.1);
+    `
+      )
+    );
+
+    this.toolbarBlockStyleClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar-block',
+        `
+        display: inline-block;
+        box-sizing: content-box;
+    `
+      )
+    );
+
+    const buttonPadding = this.toolbarHeight / 4;
+    this.toolbarButtonStyleClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar_button',
+        `
+      display: inline-block;
+      width: ${this.toolbarHeight - buttonPadding * 2}px;
+      height: ${this.toolbarHeight - buttonPadding * 2}px;
+      padding: ${buttonPadding}px;
+      box-sizing: content-box;
+    `
+      )
+    );
+    this.toolbarButtonStyleColorsClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar_button_colors',
+        `
+      fill: ${this.styleManager.settings.toolbarColor};
+    `
+      )
+    );
+
+    this.toolbarActiveButtonStyleColorsClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar_active_button',
+        `
+      fill: ${this.styleManager.settings.toolbarColor};
+      background-color: ${this.styleManager.settings.toolbarBackgroundHoverColor}
+    `
+      )
+    );
+
+    this.styleManager.addRule(
+      new StyleRule(
+        `.${this.toolbarButtonStyleClass.name} svg`,
+        `
+      height: ${this.toolbarHeight / 2}px;
+    `
+      )
+    );
+
+    this.styleManager.addRule(
+      new StyleRule(
+        `.${this.toolbarButtonStyleColorsClass.name}:hover`,
+        `
+        background-color: ${this.styleManager.settings.toolbarBackgroundHoverColor}
+    `
+      )
+    );
+  }
 }
