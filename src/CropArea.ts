@@ -19,6 +19,7 @@ import RotateLeftIcon from './assets/toolbar-icons/rotate-left.svg';
 import RotateRightIcon from './assets/toolbar-icons/rotate-right.svg';
 import FlipHotizontalIcon from './assets/toolbar-icons/flip-horizontal.svg';
 import FlipVerticalIcon from './assets/toolbar-icons/flip-vertical.svg';
+import { AspectRatioIconGenerator } from './core/AspectRatioIconGenerator';
 
 /**
  * Event handler type for {@linkcode MarkerArea} `render` event.
@@ -608,7 +609,8 @@ export class CropArea {
 
     cropBlock.addButton(
       new ToolbarButton(
-        AspectIcon,
+        AspectRatioIconGenerator.getIcon(1, 1),
+        //AspectIcon,
         'Aspect ratio',
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         () => {}
