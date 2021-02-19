@@ -1,9 +1,9 @@
+import { ToolbarBlock } from './ToolbarBlock';
 import { ToolbarButton } from './ToolbarButton';
 
-export class ToolbarButtonBlock {
+export class ToolbarButtonBlock extends ToolbarBlock {
   private buttons: ToolbarButton[] = [];
 
-  public className: string;
   public buttonClassName: string;
   public buttonColorsClassName: string;
 
@@ -13,10 +13,8 @@ export class ToolbarButtonBlock {
     this.buttons.push(button);
   }
 
-  public getUI(): HTMLElement {
-    const buttonBlock = document.createElement('div');
-    buttonBlock.className = this.className;
-    buttonBlock.style.whiteSpace = 'nowrap';
+  public getUI(): HTMLDivElement {
+    const buttonBlock = super.getUI();
 
     this.buttons.forEach((button) => buttonBlock.appendChild(button.getUI()));
 

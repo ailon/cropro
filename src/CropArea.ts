@@ -8,9 +8,17 @@ import { StyleClass, StyleManager, StyleRule } from './core/Style';
 import { Toolbar } from './core/Toolbar';
 import { ToolbarButtonBlock } from './core/ToolbarButtonBlock';
 import { ToolbarButton } from './core/ToolbarButton';
+import { ToolbarElementBlock } from './core/ToolbarElementBlock';
 
+import AspectIcon from './assets/toolbar-icons/aspect.svg';
+import GridIcon from './assets/toolbar-icons/grid.svg';
+import ZoomIcon from './assets/toolbar-icons/zoomin.svg';
 import CheckIcon from './assets/toolbar-icons/check.svg';
 import CloseIcon from './assets/toolbar-icons/close.svg';
+import RotateLeftIcon from './assets/toolbar-icons/rotate-left.svg';
+import RotateRightIcon from './assets/toolbar-icons/rotate-right.svg';
+import FlipHotizontalIcon from './assets/toolbar-icons/flip-horizontal.svg';
+import FlipVerticalIcon from './assets/toolbar-icons/flip-vertical.svg';
 
 /**
  * Event handler type for {@linkcode MarkerArea} `render` event.
@@ -575,12 +583,15 @@ export class CropArea {
     this.editingTarget = document.createElement('img');
     this.editorCanvas.appendChild(this.editingTarget);
 
-    // @todo
-    // this.toolbox = new Toolbox(this.uiDiv, this.settings.displayMode, this.uiStyleSettings);
-    // this.toolbox.show();
+    this.uiDiv.appendChild(this.bottomToolbar.getUI());
   }
 
   private addToolbars() {
+    this.addTopToolbar();
+    this.addBottomToolbar();
+  }
+
+  private addTopToolbar() {
     this.topToolbar = new Toolbar();
     this.topToolbar.className = this.toolbarStyleClass.name;
     this.topToolbar.colorsClassName = this.toolbarStyleColorsClass.name;
@@ -591,8 +602,47 @@ export class CropArea {
     this.topToolbar.buttonClassName = this.toolbarButtonStyleClass.name;
     this.topToolbar.buttonColorsClassName = this.toolbarButtonStyleColorsClass.name;
 
+    const cropBlock = new ToolbarButtonBlock();
+    cropBlock.minWidth = `${this.toolbarHeight * 3}px`;
+    this.topToolbar.addButtonBlock(cropBlock);
+
+    cropBlock.addButton(
+      new ToolbarButton(
+        AspectIcon,
+        'Aspect ratio',
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {}
+      )
+    );
+    cropBlock.addButton(
+      new ToolbarButton(
+        GridIcon,
+        'Toggle grid',
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {}
+      )
+    );
+    cropBlock.addButton(
+      new ToolbarButton(
+        ZoomIcon,
+        'Zoom to selection',
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {}
+      )
+    );
+
+    const logoBlock = new ToolbarElementBlock();
+    this.topToolbar.addElementBlock(logoBlock);
+
+    const logoText = document.createElement('div');
+    logoText.innerHTML = 'CROPRO';
+    logoText.style.color = 'white';
+    logoBlock.addElement(logoText);
+
     const actionBlock = new ToolbarButtonBlock();
-    this.topToolbar.addBlock(actionBlock);
+    actionBlock.minWidth = `${this.toolbarHeight * 3}px`;
+    actionBlock.contentAlign = 'end';
+    this.topToolbar.addButtonBlock(actionBlock);
 
     actionBlock.addButton(
       new ToolbarButton(
@@ -606,6 +656,69 @@ export class CropArea {
         CloseIcon,
         'Close',
         () => this.closeUI()
+      )
+    );
+  }
+
+  private addBottomToolbar() {
+    this.bottomToolbar = new Toolbar();
+    this.bottomToolbar.className = this.toolbarStyleClass.name;
+    this.bottomToolbar.colorsClassName = this.toolbarStyleColorsClass.name;
+    this.bottomToolbar.fadeInClassName = this.styleManager.fadeInAnimationClassName;
+
+    this.bottomToolbar.blockClassName = this.toolbarBlockStyleClass.name;
+    
+    this.bottomToolbar.buttonClassName = this.toolbarButtonStyleClass.name;
+    this.bottomToolbar.buttonColorsClassName = this.toolbarButtonStyleColorsClass.name;
+
+    const rotateBlock = new ToolbarButtonBlock();
+    rotateBlock.minWidth = `${this.toolbarHeight * 2}px`;
+    this.bottomToolbar.addButtonBlock(rotateBlock);
+
+    rotateBlock.addButton(
+      new ToolbarButton(
+        RotateLeftIcon,
+        'Rotate left',
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {}
+      )
+    );
+    rotateBlock.addButton(
+      new ToolbarButton(
+        RotateRightIcon,
+        'Rotate right',
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {}
+      )
+    );
+
+    const straightenBlock = new ToolbarElementBlock();
+    this.bottomToolbar.addElementBlock(straightenBlock);
+
+    const tempStraightener = document.createElement('div');
+    tempStraightener.innerHTML = '-------';
+    tempStraightener.style.color = 'white';
+    straightenBlock.addElement(tempStraightener);
+
+    const flipBlock = new ToolbarButtonBlock();
+    flipBlock.minWidth = `${this.toolbarHeight * 2}px`;
+    flipBlock.contentAlign = 'end';
+    this.bottomToolbar.addButtonBlock(flipBlock);
+
+    flipBlock.addButton(
+      new ToolbarButton(
+        FlipHotizontalIcon,
+        'Flip horizontal',
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {}
+      )
+    );
+    flipBlock.addButton(
+      new ToolbarButton(
+        FlipVerticalIcon,
+        'Flip vertical',
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        () => {}
       )
     );
   }
@@ -717,16 +830,6 @@ export class CropArea {
       justify-content: space-between;      
       height: ${this.toolbarHeight}px;
       box-sizing: content-box;
-      ${
-        this.displayMode === 'inline'
-          ? `border-top-left-radius: ${Math.round(this.toolbarHeight / 10)}px;`
-          : ''
-      }
-      ${
-        this.displayMode === 'inline'
-          ? `border-top-right-radius: ${Math.round(this.toolbarHeight / 10)}px;`
-          : ''
-      }
       overflow: hidden;
     `
       )
@@ -737,7 +840,6 @@ export class CropArea {
         'toolbar_colors',
         `
       background-color: ${this.styleManager.settings.toolbarBackgroundColor};
-      box-shadow: 0px 3px rgba(33, 33, 33, 0.1);
     `
       )
     );
@@ -746,7 +848,8 @@ export class CropArea {
       new StyleClass(
         'toolbar-block',
         `
-        display: inline-block;
+        display: flex;
+        align-items: center;
         box-sizing: content-box;
     `
       )

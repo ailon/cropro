@@ -1,7 +1,9 @@
+import { ToolbarBlock } from './ToolbarBlock';
 import { ToolbarButtonBlock } from './ToolbarButtonBlock';
+import { ToolbarElementBlock } from './ToolbarElementBlock';
 
 export class Toolbar {
-  private blocks: ToolbarButtonBlock[] = [];
+  private blocks: ToolbarBlock[] = [];
 
   public className: string;
   public colorsClassName: string;
@@ -12,10 +14,15 @@ export class Toolbar {
   public buttonClassName: string;
   public buttonColorsClassName: string;
 
-  public addBlock(block: ToolbarButtonBlock): void {
+  public addButtonBlock(block: ToolbarButtonBlock): void {
     block.className = this.blockClassName;
     block.buttonClassName = this.buttonClassName;
     block.buttonColorsClassName = this.buttonColorsClassName;
+    this.blocks.push(block);
+  }
+
+  public addElementBlock(block: ToolbarElementBlock): void {
+    block.className = this.blockClassName;
     this.blocks.push(block);
   }
 
