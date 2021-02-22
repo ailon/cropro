@@ -10,7 +10,6 @@ import { ToolbarButtonBlock } from './core/ToolbarButtonBlock';
 import { ToolbarButton } from './core/ToolbarButton';
 import { ToolbarElementBlock } from './core/ToolbarElementBlock';
 
-import AspectIcon from './assets/toolbar-icons/aspect.svg';
 import GridIcon from './assets/toolbar-icons/grid.svg';
 import ZoomIcon from './assets/toolbar-icons/zoomin.svg';
 import CheckIcon from './assets/toolbar-icons/check.svg';
@@ -609,7 +608,7 @@ export class CropArea {
 
     cropBlock.addButton(
       new ToolbarButton(
-        AspectRatioIconGenerator.getIcon(1, 1),
+        AspectRatioIconGenerator.getIcon(16, 9),
         //AspectIcon,
         'Aspect ratio',
         // eslint-disable-next-line @typescript-eslint/no-empty-function

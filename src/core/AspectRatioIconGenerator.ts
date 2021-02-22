@@ -1,34 +1,69 @@
+import { AspectRatio } from './AspectRatio';
 import { SvgHelper } from './SvgHelper';
+import AspectIcon from './../assets/toolbar-icons/aspect.svg';
 
 export class AspectRatioIconGenerator {
   public static getIcon(hRatio: number, vRatio: number): string {
-    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    icon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    icon.setAttribute('viewBox', '0 0 24 24');
+    if (hRatio > 0 && vRatio > 0) {
+      const ar = new AspectRatio(hRatio, vRatio);
+      const csWidth = ar.ratio >= 1 ? 20 : ar.getHorizontalLength(20);
+      const csHeight = ar.ratio < 1 ? 20 : ar.getVerticalLength(20);
 
-    const defs = SvgHelper.createDefs();
-    icon.appendChild(defs);
+      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      icon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      icon.setAttribute('viewBox', '0 0 24 24');
 
-    const clipPath = SvgHelper.createElement('clipPath', [
-      ['id', 'text-bg-clip'],
-    ]);
-    const clipPathShape = SvgHelper.createPath('M0,0V23H23V0H2V8H21V16H2V0Z');
-    clipPath.appendChild(clipPathShape);
-    defs.appendChild(clipPath);
+      document.body.appendChild(icon);
 
-    const cropShape = SvgHelper.createPath('M2,2V22H22V2H4V4H20V20H4V2Z');
-    SvgHelper.setAttributes(cropShape, [['clip-path', 'url(#text-bg-clip)']]);
-    icon.appendChild(cropShape);
+      const defs = SvgHelper.createDefs();
+      icon.appendChild(defs);
 
-    const text = SvgHelper.createText([
-      ['x', '3'],
-      ['y', '14'],
-      ['font-size', '9px'],
-      ['font-family', 'sans-serif'],
-    ]);
-    text.appendChild(SvgHelper.createTSpan('16:9'));
-    icon.appendChild(text);
+      const clipPath = SvgHelper.createElement('clipPath', [
+        ['id', 'text-bg-clip'],
+      ]);
+      defs.appendChild(clipPath);
 
-    return icon.outerHTML;
+      const cropShape = SvgHelper.createHollowRectangle(
+        (24 - csWidth) / 2,
+        (24 - csHeight) / 2,
+        csWidth,
+        csHeight,
+        csWidth - 4,
+        csHeight - 4
+      );
+      icon.appendChild(cropShape);
+
+      const text = SvgHelper.createText([
+        ['x', '0'],
+        ['y', '0'],
+        ['font-size', '7px'],
+        ['font-family', 'monospace'],
+      ]);
+      text.appendChild(SvgHelper.createTSpan(`${hRatio}:${vRatio}`));
+      icon.appendChild(text);
+
+      const textBBox = text.getBBox();
+      SvgHelper.setAttributes(text, [
+        ['x', ((24 - textBBox.width) / 2).toString()],
+        ['y', ((24 - textBBox.height) / 2 - textBBox.y).toString()],
+      ]);
+
+      const clipPathShape = SvgHelper.createHollowRectangle(
+        0,
+        0,
+        24,
+        24,
+        Math.ceil(textBBox.width),
+        Math.ceil(textBBox.height)
+      );
+      clipPath.appendChild(clipPathShape);
+      SvgHelper.setAttributes(cropShape, [['clip-path', 'url(#text-bg-clip)']]);
+
+      document.body.removeChild(icon);
+
+      return icon.outerHTML;
+    } else {
+      return AspectIcon;
+    }
   }
 }
