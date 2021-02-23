@@ -19,6 +19,8 @@ import RotateRightIcon from './assets/toolbar-icons/rotate-right.svg';
 import FlipHotizontalIcon from './assets/toolbar-icons/flip-horizontal.svg';
 import FlipVerticalIcon from './assets/toolbar-icons/flip-vertical.svg';
 import { AspectRatioIconGenerator } from './core/AspectRatioIconGenerator';
+import { DropdownToolbarButton } from './core/DropdownToolbarButton';
+import { IAspectRatio } from './core/AspectRatio';
 
 /**
  * Event handler type for {@linkcode MarkerArea} `render` event.
@@ -70,9 +72,10 @@ export class CropArea {
   private toolbarStyleClass: StyleClass;
   private toolbarStyleColorsClass: StyleClass;
   private toolbarBlockStyleClass: StyleClass;
+  private toolbarButtonStyleClass: StyleClass;
   private toolbarButtonStyleColorsClass: StyleClass;
   private toolbarActiveButtonStyleColorsClass: StyleClass;
-  private toolbarButtonStyleClass: StyleClass;
+  private toolbarDropdownStyleClass: StyleClass;
 
   /**
    * `targetRoot` is used to set an alternative positioning root for the UI.
@@ -145,6 +148,20 @@ export class CropArea {
    * Base height of the toolbar block in pixels.
    */
   toolbarHeight = 40;
+
+  public aspectRatios: IAspectRatio[] = [
+    { horizontal: 0, vertical: 0 },
+    { horizontal: 1, vertical: 1 },
+    { horizontal: 4, vertical: 3 },
+    { horizontal: 3, vertical: 2 },
+    { horizontal: 16, vertical: 9 },
+    { horizontal: 3, vertical: 4 },
+    { horizontal: 2, vertical: 3 },
+    { horizontal: 9, vertical: 16 }
+  ];
+  public aspectRatio = this.aspectRatios[0];
+  
+  private aspectRatioButton: DropdownToolbarButton;
 
   /**
    * Creates a new CropArea for the specified target image.
@@ -598,7 +615,7 @@ export class CropArea {
     this.topToolbar.fadeInClassName = this.styleManager.fadeInAnimationClassName;
 
     this.topToolbar.blockClassName = this.toolbarBlockStyleClass.name;
-    
+
     this.topToolbar.buttonClassName = this.toolbarButtonStyleClass.name;
     this.topToolbar.buttonColorsClassName = this.toolbarButtonStyleColorsClass.name;
 
@@ -606,31 +623,27 @@ export class CropArea {
     cropBlock.minWidth = `${this.toolbarHeight * 3}px`;
     this.topToolbar.addButtonBlock(cropBlock);
 
-    cropBlock.addButton(
-      new ToolbarButton(
-        AspectRatioIconGenerator.getIcon(16, 9),
-        //AspectIcon,
-        'Aspect ratio',
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {}
-      )
+    const ratioButtons: ToolbarButton[] = [];
+    this.aspectRatios.forEach(ratio => {
+      const button = new ToolbarButton(
+        AspectRatioIconGenerator.getIcon(ratio.horizontal, ratio.vertical),
+        ratio.horizontal === 0 && ratio.vertical === 0 ? 'FREE' : `${ratio.horizontal}:${ratio.vertical}`
+      );
+      button.onClick = () => this.ratioButtonClicked(ratio);
+      ratioButtons.push(button);
+    })
+
+    this.aspectRatioButton = new DropdownToolbarButton(
+      AspectRatioIconGenerator.getIcon(0, 0),
+      'Aspect ratio',
+      ratioButtons
     );
-    cropBlock.addButton(
-      new ToolbarButton(
-        GridIcon,
-        'Toggle grid',
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {}
-      )
-    );
-    cropBlock.addButton(
-      new ToolbarButton(
-        ZoomIcon,
-        'Zoom to selection',
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {}
-      )
-    );
+    this.aspectRatioButton.dropdownClassName = this.toolbarDropdownStyleClass.name;
+
+    cropBlock.addButton(this.aspectRatioButton);
+
+    cropBlock.addButton(new ToolbarButton(GridIcon, 'Toggle grid'));
+    cropBlock.addButton(new ToolbarButton(ZoomIcon, 'Zoom to selection'));
 
     const logoBlock = new ToolbarElementBlock();
     this.topToolbar.addElementBlock(logoBlock);
@@ -645,20 +658,12 @@ export class CropArea {
     actionBlock.contentAlign = 'end';
     this.topToolbar.addButtonBlock(actionBlock);
 
-    actionBlock.addButton(
-      new ToolbarButton(
-        CheckIcon,
-        'OK',
-        () => this.closeUI()
-      )
-    );
-    actionBlock.addButton(
-      new ToolbarButton(
-        CloseIcon,
-        'Close',
-        () => this.closeUI()
-      )
-    );
+    const okButton = new ToolbarButton(CheckIcon, 'OK');
+    okButton.onClick = this.closeUI;
+    actionBlock.addButton(okButton);
+    const closeButton = new ToolbarButton(CloseIcon, 'Close');
+    closeButton.onClick = this.closeUI;
+    actionBlock.addButton(closeButton);
   }
 
   private addBottomToolbar() {
@@ -668,7 +673,7 @@ export class CropArea {
     this.bottomToolbar.fadeInClassName = this.styleManager.fadeInAnimationClassName;
 
     this.bottomToolbar.blockClassName = this.toolbarBlockStyleClass.name;
-    
+
     this.bottomToolbar.buttonClassName = this.toolbarButtonStyleClass.name;
     this.bottomToolbar.buttonColorsClassName = this.toolbarButtonStyleColorsClass.name;
 
@@ -676,22 +681,8 @@ export class CropArea {
     rotateBlock.minWidth = `${this.toolbarHeight * 2}px`;
     this.bottomToolbar.addButtonBlock(rotateBlock);
 
-    rotateBlock.addButton(
-      new ToolbarButton(
-        RotateLeftIcon,
-        'Rotate left',
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {}
-      )
-    );
-    rotateBlock.addButton(
-      new ToolbarButton(
-        RotateRightIcon,
-        'Rotate right',
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {}
-      )
-    );
+    rotateBlock.addButton(new ToolbarButton(RotateLeftIcon, 'Rotate left'));
+    rotateBlock.addButton(new ToolbarButton(RotateRightIcon, 'Rotate right'));
 
     const straightenBlock = new ToolbarElementBlock();
     this.bottomToolbar.addElementBlock(straightenBlock);
@@ -707,21 +698,15 @@ export class CropArea {
     this.bottomToolbar.addButtonBlock(flipBlock);
 
     flipBlock.addButton(
-      new ToolbarButton(
-        FlipHotizontalIcon,
-        'Flip horizontal',
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {}
-      )
+      new ToolbarButton(FlipHotizontalIcon, 'Flip horizontal')
     );
-    flipBlock.addButton(
-      new ToolbarButton(
-        FlipVerticalIcon,
-        'Flip vertical',
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        () => {}
-      )
-    );
+    flipBlock.addButton(new ToolbarButton(FlipVerticalIcon, 'Flip vertical'));
+  }
+
+  private ratioButtonClicked(ratio: IAspectRatio) {
+    this.aspectRatio = ratio;
+    this.aspectRatioButton.icon = AspectRatioIconGenerator.getIcon(ratio.horizontal, ratio.vertical);
+    this.aspectRatioButton.hideDropdown();
   }
 
   private closeUI() {
@@ -865,6 +850,8 @@ export class CropArea {
       width: ${this.toolbarHeight - buttonPadding * 2}px;
       height: ${this.toolbarHeight - buttonPadding * 2}px;
       padding: ${buttonPadding}px;
+      cursor: default;
+      user-select: none;
       box-sizing: content-box;
     `
       )
@@ -905,5 +892,21 @@ export class CropArea {
     `
       )
     );
+
+    this.toolbarDropdownStyleClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar_dropdown',
+        `
+      position: absolute;
+      width: ${this.toolbarHeight * 4}px;
+      background-color: ${this.styleManager.settings.toolbarBackgroundColor};
+      z-index: 20;
+      white-space: normal;
+      box-sizing: content-box;
+      box-shadow: 3px 3px rgba(33, 33, 33, 0.1);
+    `
+      )
+    );
+
   }
 }

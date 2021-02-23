@@ -1,4 +1,9 @@
-export class AspectRatio {
+export interface IAspectRatio {
+  horizontal: number;
+  vertical: number;
+}
+
+export class AspectRatio implements IAspectRatio {
   public horizontal: number;
   public vertical: number;
 
