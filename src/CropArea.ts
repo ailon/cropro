@@ -21,6 +21,7 @@ import FlipVerticalIcon from './assets/toolbar-icons/flip-vertical.svg';
 import { AspectRatioIconGenerator } from './core/AspectRatioIconGenerator';
 import { DropdownToolbarButton } from './core/DropdownToolbarButton';
 import { IAspectRatio } from './core/AspectRatio';
+import { CropLayer } from './CropLayer';
 
 /**
  * Event handler type for {@linkcode MarkerArea} `render` event.
@@ -68,6 +69,8 @@ export class CropArea {
   }
 
   private styleManager: StyleManager;
+
+  private cropLayer: CropLayer;
 
   private toolbarStyleClass: StyleClass;
   private toolbarStyleColorsClass: StyleClass;
@@ -157,10 +160,10 @@ export class CropArea {
     { horizontal: 16, vertical: 9 },
     { horizontal: 3, vertical: 4 },
     { horizontal: 2, vertical: 3 },
-    { horizontal: 9, vertical: 16 }
+    { horizontal: 9, vertical: 16 },
   ];
   public aspectRatio = this.aspectRatios[0];
-  
+
   private aspectRatioButton: DropdownToolbarButton;
 
   /**
@@ -186,9 +189,6 @@ export class CropArea {
 
     // @todo
     // this.toolbarButtonClicked = this.toolbarButtonClicked.bind(this);
-    this.onPointerDown = this.onPointerDown.bind(this);
-    this.onPointerMove = this.onPointerMove.bind(this);
-    this.onPointerUp = this.onPointerUp.bind(this);
     this.overrideOverflow = this.overrideOverflow.bind(this);
     this.restoreOverflow = this.restoreOverflow.bind(this);
     this.close = this.close.bind(this);
@@ -207,6 +207,7 @@ export class CropArea {
     this.setEditingTarget();
     this.setTopLeft();
     this.initCropCanvas();
+    this.initCropLayer();
     this.attachEvents();
 
     if (!Activator.isLicensed) {
@@ -430,10 +431,25 @@ export class CropArea {
     this.cropImageHolder.style.left = this.left + 'px';
   }
 
+  private initCropLayer() {
+    // crop layer
+    const cropLayerG = SvgHelper.createGroup();
+    this.cropImage.appendChild(cropLayerG);
+    this.cropLayer = new CropLayer(
+      this.imageWidth,
+      this.imageHeight,
+      cropLayerG
+    );
+    this.cropLayer.open();
+    this.cropLayer.setCropRectangle({
+      x: 30,
+      y: 30,
+      width: this.imageWidth - 60,
+      height: this.imageHeight - 60,
+    });
+  }  
+
   private attachEvents() {
-    this.cropImage.addEventListener('pointerdown', this.onPointerDown);
-    window.addEventListener('pointermove', this.onPointerMove);
-    window.addEventListener('pointerup', this.onPointerUp);
     window.addEventListener('resize', this.onWindowResize);
   }
 
@@ -624,14 +640,16 @@ export class CropArea {
     this.topToolbar.addButtonBlock(cropBlock);
 
     const ratioButtons: ToolbarButton[] = [];
-    this.aspectRatios.forEach(ratio => {
+    this.aspectRatios.forEach((ratio) => {
       const button = new ToolbarButton(
         AspectRatioIconGenerator.getIcon(ratio.horizontal, ratio.vertical),
-        ratio.horizontal === 0 && ratio.vertical === 0 ? 'FREE' : `${ratio.horizontal}:${ratio.vertical}`
+        ratio.horizontal === 0 && ratio.vertical === 0
+          ? 'FREE'
+          : `${ratio.horizontal}:${ratio.vertical}`
       );
       button.onClick = () => this.ratioButtonClicked(ratio);
       ratioButtons.push(button);
-    })
+    });
 
     this.aspectRatioButton = new DropdownToolbarButton(
       AspectRatioIconGenerator.getIcon(0, 0),
@@ -705,7 +723,10 @@ export class CropArea {
 
   private ratioButtonClicked(ratio: IAspectRatio) {
     this.aspectRatio = ratio;
-    this.aspectRatioButton.icon = AspectRatioIconGenerator.getIcon(ratio.horizontal, ratio.vertical);
+    this.aspectRatioButton.icon = AspectRatioIconGenerator.getIcon(
+      ratio.horizontal,
+      ratio.vertical
+    );
     this.aspectRatioButton.hideDropdown();
   }
 
@@ -752,21 +773,6 @@ export class CropArea {
       // @todo
       // this.scaleMarkers(this.imageWidth / state.width, this.imageHeight / state.height);
     }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private onPointerDown(ev: PointerEvent) {
-    // @todo
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private onPointerMove(ev: PointerEvent) {
-    // @todo
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private onPointerUp(ev: PointerEvent) {
-    // @todo
   }
 
   private clientToLocalCoordinates(x: number, y: number): IPoint {
@@ -907,6 +913,5 @@ export class CropArea {
     `
       )
     );
-
   }
 }

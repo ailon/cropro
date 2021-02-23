@@ -9,7 +9,10 @@ export class AspectRatioIconGenerator {
       const csWidth = ar.ratio >= 1 ? 20 : ar.getHorizontalLength(20);
       const csHeight = ar.ratio < 1 ? 20 : ar.getVerticalLength(20);
 
-      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const icon = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
       icon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
       icon.setAttribute('viewBox', '0 0 24 24');
 
@@ -23,13 +26,17 @@ export class AspectRatioIconGenerator {
       ]);
       defs.appendChild(clipPath);
 
-      const cropShape = SvgHelper.createHollowRectangle(
-        (24 - csWidth) / 2,
-        (24 - csHeight) / 2,
-        csWidth,
-        csHeight,
-        csWidth - 4,
-        csHeight - 4
+      const cropShape = SvgHelper.createPath(
+        SvgHelper.getHollowRectanglePath(
+          (24 - csWidth) / 2,
+          (24 - csHeight) / 2,
+          csWidth,
+          csHeight,
+          (24 - csWidth) / 2 + 2,
+          (24 - csHeight) / 2 + 2,
+          csWidth - 4,
+          csHeight - 4
+        )
       );
       icon.appendChild(cropShape);
 
@@ -48,13 +55,17 @@ export class AspectRatioIconGenerator {
         ['y', ((24 - textBBox.height) / 2 - textBBox.y).toString()],
       ]);
 
-      const clipPathShape = SvgHelper.createHollowRectangle(
-        0,
-        0,
-        24,
-        24,
-        Math.ceil(textBBox.width),
-        Math.ceil(textBBox.height)
+      const clipPathShape = SvgHelper.createPath(
+        SvgHelper.getHollowRectanglePath(
+          0,
+          0,
+          24,
+          24,
+          (24 - Math.ceil(textBBox.width)) / 2,
+          (24 - Math.ceil(textBBox.height)) /2,
+          Math.ceil(textBBox.width),
+          Math.ceil(textBBox.height)
+        )
       );
       clipPath.appendChild(clipPathShape);
       SvgHelper.setAttributes(cropShape, [['clip-path', 'url(#text-bg-clip)']]);

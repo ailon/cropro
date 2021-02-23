@@ -320,24 +320,28 @@ export class SvgHelper {
     return el;
   }
 
-  public static createHollowRectangle(
+  public static getHollowRectanglePath(
     x: number,
     y: number,
     outerWidth: number,
     outerHeight: number,
+    innerX: number,
+    innerY: number,
     innerWidth: number,
     innerHeight: number,
-    attributes?: Array<[string, string]>
-  ): SVGPathElement {
+  ): string {
 
-    const hDepth = (outerWidth-innerWidth)/2;
-    const vDepth = (outerHeight-innerHeight)/2;
+    // const hDepth = (outerWidth-innerWidth)/2;
+    // const vDepth = (outerHeight-innerHeight)/2;
 
+    // const d = `M${x},${y
+    //   }V${y+outerHeight}H${x+outerWidth}V${y}H${x+hDepth}V${y+vDepth
+    //   }H${x+hDepth+innerWidth}V${y+vDepth+innerHeight}H${x+hDepth}V${y}Z`;
     const d = `M${x},${y
-      }V${y+outerHeight}H${x+outerWidth}V${y}H${x+hDepth}V${y+vDepth
-      }H${x+hDepth+innerWidth}V${y+vDepth+innerHeight}H${x+hDepth}V${y}Z`;
+      }V${y+outerHeight}H${x+outerWidth}V${y}H${innerX}V${innerY
+      }H${innerX+innerWidth}V${innerY+innerHeight}H${innerX}V${y}Z`;
 
-    return SvgHelper.createPath(d, attributes);
+    return d;
   }
 
 
