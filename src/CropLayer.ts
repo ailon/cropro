@@ -1,3 +1,4 @@
+import { IPoint } from './core/IPoint';
 import { ResizeGrip } from './core/ResizeGrip';
 import { SvgHelper } from './core/SvgHelper';
 
@@ -18,10 +19,12 @@ export class CropLayer {
   private cropShadeElement: SVGPathElement;
 
   private container: SVGGElement;
+  
   private topLeftGrip: ResizeGrip;
   private topRightGrip: ResizeGrip;
   private bottomLeftGrip: ResizeGrip;
   private bottomRightGrip: ResizeGrip;
+  private activeGrip: ResizeGrip;
 
   constructor(
     canvasWidth: number,
@@ -31,6 +34,9 @@ export class CropLayer {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     this.container = container;
+
+    this.attachEvents = this.attachEvents.bind(this);
+    this.resize = this.resize.bind(this);
     this.onPointerDown = this.onPointerDown.bind(this);
     this.onPointerMove = this.onPointerMove.bind(this);
     this.onPointerUp = this.onPointerUp.bind(this);
@@ -58,6 +64,8 @@ export class CropLayer {
     this.container.appendChild(this.bottomLeftGrip.visual);
     this.bottomRightGrip = new ResizeGrip();
     this.container.appendChild(this.bottomRightGrip.visual);
+
+    this.attachEvents();
   }
 
   public setCropRectangle(rect: IRect): void {
@@ -106,18 +114,71 @@ export class CropLayer {
     window.addEventListener('pointerup', this.onPointerUp);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private onPointerDown(ev: PointerEvent) {
-    // @todo
+  private clientToLocalCoordinates(x: number, y: number): IPoint {
+    const clientRect = this.container.getBoundingClientRect();
+    return { x: x - clientRect.x, y: y - clientRect.y };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private onPointerDown(ev: PointerEvent) {
+    if (this.topLeftGrip.ownsTarget(ev.target)) {
+      this.activeGrip = this.topLeftGrip;
+    } else if (this.bottomLeftGrip.ownsTarget(ev.target)) {
+      this.activeGrip = this.bottomLeftGrip;
+    } else if (this.topRightGrip.ownsTarget(ev.target)) {
+      this.activeGrip = this.topRightGrip;
+    } else if (this.bottomRightGrip.ownsTarget(ev.target)) {
+      this.activeGrip = this.bottomRightGrip;
+    }
+  }
+
   private onPointerMove(ev: PointerEvent) {
-    // @todo
+    if (this.activeGrip) {
+      this.resize(this.clientToLocalCoordinates(ev.clientX, ev.clientY));
+    }
+    ev.preventDefault();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private onPointerUp(ev: PointerEvent) {
-    // @todo
+    this.activeGrip = undefined;
   }
+
+  protected resize(point: IPoint): void {
+    const newCropRect = Object.assign({}, this.cropRect);
+
+    switch(this.activeGrip) {
+      case this.bottomLeftGrip:
+      case this.topLeftGrip:
+        newCropRect.x = point.x;
+        newCropRect.width = this.cropRect.x + this.cropRect.width - newCropRect.x;
+        break; 
+      case this.bottomRightGrip:
+      case this.topRightGrip:
+        newCropRect.width = point.x - newCropRect.x;
+        break; 
+    }
+
+    switch(this.activeGrip) {
+      case this.topLeftGrip:
+      case this.topRightGrip:
+        newCropRect.y = point.y;
+        newCropRect.height = this.cropRect.y + this.cropRect.height - newCropRect.y;
+        break; 
+      case this.bottomLeftGrip:
+      case this.bottomRightGrip:
+        newCropRect.height = point.y - newCropRect.y;
+        break; 
+    }
+
+    if (newCropRect.width < 10) {
+      newCropRect.x = this.cropRect.x;
+      newCropRect.width = 10;
+    }
+    if (newCropRect.height < 10) {
+      newCropRect.y = this.cropRect.y
+      newCropRect.height = 10;
+    }
+
+    this.setCropRectangle(newCropRect);
+  }  
 }
