@@ -1,3 +1,4 @@
+import { AspectRatio } from './core/AspectRatio';
 import { IPoint } from './core/IPoint';
 import { ResizeGrip } from './core/ResizeGrip';
 import { SvgHelper } from './core/SvgHelper';
@@ -26,20 +27,30 @@ export class CropLayer {
   private bottomRightGrip: ResizeGrip;
   private activeGrip: ResizeGrip;
 
+  private _aspectRatio: AspectRatio;
+  public get aspectRatio(): AspectRatio {
+    return this._aspectRatio;
+  }
+  public set aspectRatio(value: AspectRatio) {
+    this._aspectRatio = value;
+    this.adjustCropRect();
+  }
+
   constructor(
     canvasWidth: number,
     canvasHeight: number,
-    container: SVGGElement
+    container: SVGGElement,
   ) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     this.container = container;
 
     this.attachEvents = this.attachEvents.bind(this);
-    this.resize = this.resize.bind(this);
     this.onPointerDown = this.onPointerDown.bind(this);
     this.onPointerMove = this.onPointerMove.bind(this);
     this.onPointerUp = this.onPointerUp.bind(this);
+    this.resize = this.resize.bind(this);
+    this.adjustCropRect = this.adjustCropRect.bind(this);
   }
 
   public open(): void {
@@ -143,7 +154,7 @@ export class CropLayer {
     this.activeGrip = undefined;
   }
 
-  protected resize(point: IPoint): void {
+  private resize(point: IPoint): void {
     const newCropRect = Object.assign({}, this.cropRect);
 
     switch(this.activeGrip) {
@@ -181,4 +192,29 @@ export class CropLayer {
 
     this.setCropRectangle(newCropRect);
   }  
+
+  private adjustCropRect() {
+    if (this.aspectRatio) {
+      const arWidth = this.aspectRatio.getHorizontalLength(this.cropRect.height);
+      const arHeight = this.aspectRatio.getVerticalLength(this.cropRect.width);
+
+      if (arWidth / this.canvasWidth > arHeight / this.canvasHeight) {
+        this.cropRect.width = arWidth;
+      } else {
+        this.cropRect.height = arHeight;
+      }
+      if (this.cropRect.width > this.canvasWidth) {
+        this.cropRect.height /= (this.cropRect.width / this.canvasWidth);
+        this.cropRect.width = this.canvasWidth;
+      }
+      if (this.cropRect.height > this.canvasHeight) {
+        this.cropRect.width /= (this.cropRect.height / this.canvasHeight);
+        this.cropRect.height = this.canvasHeight;
+      }
+      this.cropRect.x = this.canvasWidth / 2 - this.cropRect.width / 2;
+      this.cropRect.y = this.canvasHeight / 2 - this.cropRect.height / 2;
+
+      this.setCropRectangle(this.cropRect);
+    }
+  }
 }

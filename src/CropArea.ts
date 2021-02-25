@@ -20,7 +20,7 @@ import FlipHotizontalIcon from './assets/toolbar-icons/flip-horizontal.svg';
 import FlipVerticalIcon from './assets/toolbar-icons/flip-vertical.svg';
 import { AspectRatioIconGenerator } from './core/AspectRatioIconGenerator';
 import { DropdownToolbarButton } from './core/DropdownToolbarButton';
-import { IAspectRatio } from './core/AspectRatio';
+import { AspectRatio, IAspectRatio } from './core/AspectRatio';
 import { CropLayer } from './CropLayer';
 
 /**
@@ -106,6 +106,14 @@ export class CropArea {
 
   private topToolbar: Toolbar;
   private bottomToolbar: Toolbar;
+
+  private CANVAS_MARGIN = 20;
+  private get paddedImageWidth(): number {
+    return this.imageWidth + this.CANVAS_MARGIN * 2;
+  }
+  private get paddedImageHeight(): number {
+    return this.imageHeight + this.CANVAS_MARGIN * 2;
+  }
 
   /**
    * Returns `true` when CropArea is open and `false` otherwise.
@@ -338,6 +346,14 @@ export class CropArea {
     this.windowHeight = window.innerHeight;
   }
 
+  private setEditingTargetSize() {
+    this.editingTarget.width = this.imageWidth;
+    this.editingTarget.height = this.imageHeight;
+    this.editingTarget.style.width = `${this.imageWidth}px`;
+    this.editingTarget.style.height = `${this.imageHeight}px`;
+    this.editingTarget.style.margin = `${this.CANVAS_MARGIN}px`;
+  }
+
   private resize(newWidth: number, newHeight: number) {
     // @todo
     // const scaleX = newWidth / this.imageWidth;
@@ -346,23 +362,24 @@ export class CropArea {
     this.imageWidth = Math.round(newWidth);
     this.imageHeight = Math.round(newHeight);
     this.editingTarget.src = this.target.src;
-    this.editingTarget.width = this.imageWidth;
-    this.editingTarget.height = this.imageHeight;
-    this.editingTarget.style.width = `${this.imageWidth}px`;
-    this.editingTarget.style.height = `${this.imageHeight}px`;
+    this.setEditingTargetSize();
 
-    this.cropImage.setAttribute('width', this.imageWidth.toString());
-    this.cropImage.setAttribute('height', this.imageHeight.toString());
+    this.cropImage.setAttribute('width', this.paddedImageWidth.toString());
+    this.cropImage.setAttribute('height', this.paddedImageHeight.toString());
     this.cropImage.setAttribute(
       'viewBox',
-      '0 0 ' + this.imageWidth.toString() + ' ' + this.imageHeight.toString()
+      '0 0 ' +
+        this.paddedImageWidth.toString() +
+        ' ' +
+        this.paddedImageHeight.toString()
     );
 
-    this.cropImageHolder.style.width = `${this.imageWidth}px`;
-    this.cropImageHolder.style.height = `${this.imageHeight}px`;
+    this.cropImageHolder.style.width = `${this.paddedImageWidth}px`;
+    this.cropImageHolder.style.height = `${this.paddedImageHeight}px`;
 
     if (this.displayMode !== 'popup') {
-      this.coverDiv.style.width = `${this.imageWidth.toString()}px`;
+      this.coverDiv.style.width = `${this.paddedImageWidth}px`;
+      // this.coverDiv.style.height = `${this.paddedImageHeight}px`;
     } else {
       this.setTopLeft();
       this.positionCropImage();
@@ -380,17 +397,14 @@ export class CropArea {
     this.imageWidth = Math.round(this.target.clientWidth);
     this.imageHeight = Math.round(this.target.clientHeight);
     this.editingTarget.src = this.target.src;
-    this.editingTarget.width = this.imageWidth;
-    this.editingTarget.height = this.imageHeight;
-    this.editingTarget.style.width = `${this.imageWidth}px`;
-    this.editingTarget.style.height = `${this.imageHeight}px`;
+    this.setEditingTargetSize();
   }
 
   private setTopLeft() {
     const targetRect = this.editingTarget.getBoundingClientRect();
     const bodyRect = this.editorCanvas.getBoundingClientRect();
-    this.left = targetRect.left - bodyRect.left;
-    this.top = targetRect.top - bodyRect.top;
+    this.left = targetRect.left - bodyRect.left - this.CANVAS_MARGIN;
+    this.top = targetRect.top - bodyRect.top - this.CANVAS_MARGIN;
   }
 
   private initCropCanvas(): void {
@@ -404,17 +418,20 @@ export class CropArea {
       'svg'
     );
     this.cropImage.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    this.cropImage.setAttribute('width', this.imageWidth.toString());
-    this.cropImage.setAttribute('height', this.imageHeight.toString());
+    this.cropImage.setAttribute('width', this.paddedImageWidth.toString());
+    this.cropImage.setAttribute('height', this.paddedImageHeight.toString());
     this.cropImage.setAttribute(
       'viewBox',
-      '0 0 ' + this.imageWidth.toString() + ' ' + this.imageHeight.toString()
+      '0 0 ' +
+        this.paddedImageWidth.toString() +
+        ' ' +
+        this.paddedImageHeight.toString()
     );
     this.cropImage.style.pointerEvents = 'auto';
 
     this.cropImageHolder.style.position = 'absolute';
-    this.cropImageHolder.style.width = `${this.imageWidth}px`;
-    this.cropImageHolder.style.height = `${this.imageHeight}px`;
+    this.cropImageHolder.style.width = `${this.paddedImageWidth}px`;
+    this.cropImageHolder.style.height = `${this.paddedImageHeight}px`;
     this.cropImageHolder.style.transformOrigin = 'top left';
     this.positionCropImage();
 
@@ -436,18 +453,18 @@ export class CropArea {
     const cropLayerG = SvgHelper.createGroup();
     this.cropImage.appendChild(cropLayerG);
     this.cropLayer = new CropLayer(
-      this.imageWidth,
-      this.imageHeight,
+      this.paddedImageWidth,
+      this.paddedImageHeight,
       cropLayerG
     );
     this.cropLayer.open();
     this.cropLayer.setCropRectangle({
-      x: 30,
-      y: 30,
+      x: 30 + this.CANVAS_MARGIN,
+      y: 30 + this.CANVAS_MARGIN,
       width: this.imageWidth - 60,
       height: this.imageHeight - 60,
     });
-  }  
+  }
 
   private attachEvents() {
     window.addEventListener('resize', this.onWindowResize);
@@ -526,8 +543,7 @@ export class CropArea {
 
     this.coverDiv = document.createElement('div');
 
-    // @todo
-    // this.coverDiv.className = Style.CLASS_PREFIX;
+    this.coverDiv.className = this.styleManager.classNamePrefix;
 
     // hardcode font size so nothing inside is affected by higher up settings
     this.coverDiv.style.fontSize = '16px';
@@ -535,13 +551,19 @@ export class CropArea {
       case 'inline': {
         this.coverDiv.style.position = 'absolute';
         const coverTop =
-          this.target.offsetTop > this.toolbarHeight
-            ? this.target.offsetTop - this.toolbarHeight
+          this.target.offsetTop > this.toolbarHeight + this.CANVAS_MARGIN
+            ? this.target.offsetTop - (this.toolbarHeight + this.CANVAS_MARGIN)
             : 0;
         this.coverDiv.style.top = `${coverTop}px`;
-        this.coverDiv.style.left = `${this.target.offsetLeft.toString()}px`;
-        this.coverDiv.style.width = `${this.target.offsetWidth.toString()}px`;
-        //this.coverDiv.style.height = `${this.target.offsetHeight.toString()}px`;
+        this.coverDiv.style.left = `${
+          this.target.offsetLeft > this.CANVAS_MARGIN
+            ? this.target.offsetLeft - this.CANVAS_MARGIN
+            : 0
+        }px`;
+        this.coverDiv.style.width = `${
+          this.target.offsetWidth + this.CANVAS_MARGIN
+        }px`;
+        // this.coverDiv.style.height = `${this.target.offsetHeight + this.CANVAS_MARGIN}px`;
         this.coverDiv.style.zIndex = '5';
         // flex causes the ui to stretch when toolbox has wider nowrap panels
         //this.coverDiv.style.display = 'flex';
@@ -588,6 +610,7 @@ export class CropArea {
     this.contentDiv.style.flexShrink = '1';
     // @todo
     // this.contentDiv.style.backgroundColor = this.uiStyleSettings.canvasBackgroundColor;
+    this.contentDiv.style.backgroundColor = 'white';
     if (this.displayMode === 'popup') {
       this.contentDiv.style.maxHeight = `${
         this.windowHeight - this.popupMargin * 2 - this.toolbarHeight * 3.5
@@ -723,11 +746,29 @@ export class CropArea {
 
   private ratioButtonClicked(ratio: IAspectRatio) {
     this.aspectRatio = ratio;
+    this.setCropLayerAspectRatio();
     this.aspectRatioButton.icon = AspectRatioIconGenerator.getIcon(
       ratio.horizontal,
       ratio.vertical
     );
     this.aspectRatioButton.hideDropdown();
+  }
+
+  private setCropLayerAspectRatio() {
+    if (this.cropLayer) {
+      if (
+        this.aspectRatio &&
+        this.aspectRatio.horizontal !== 0 &&
+        this.aspectRatio.vertical !== 0
+      ) {
+        this.cropLayer.aspectRatio = new AspectRatio(
+          this.aspectRatio.horizontal,
+          this.aspectRatio.vertical
+        );
+      } else {
+        this.cropLayer.aspectRatio = undefined;
+      }
+    }
   }
 
   private closeUI() {
