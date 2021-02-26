@@ -13,6 +13,13 @@ export interface IRect {
 export class CropLayer {
   private canvasWidth: number;
   private canvasHeight: number;
+  private margin: number;
+  private get paddedCanvasWidth(): number {
+    return this.canvasWidth + this.margin * 2;
+  }
+  private get paddedCanvasHeight(): number {
+    return this.canvasHeight + this.margin * 2;
+  }
 
   private cropRect: IRect;
 
@@ -39,10 +46,12 @@ export class CropLayer {
   constructor(
     canvasWidth: number,
     canvasHeight: number,
+    margin: number,
     container: SVGGElement,
   ) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
+    this.margin = margin;
     this.container = container;
 
     this.attachEvents = this.attachEvents.bind(this);
@@ -92,8 +101,8 @@ export class CropLayer {
       [
         'd',
         SvgHelper.getHollowRectanglePath(
-          0,
-          0,
+          this.margin,
+          this.margin,
           this.canvasWidth,
           this.canvasHeight,
           this.cropRect.x,
@@ -127,7 +136,7 @@ export class CropLayer {
 
   private clientToLocalCoordinates(x: number, y: number): IPoint {
     const clientRect = this.container.getBoundingClientRect();
-    return { x: x - clientRect.x, y: y - clientRect.y };
+    return { x: x - clientRect.x + this.margin, y: y - clientRect.y + this.margin };
   }
 
   private onPointerDown(ev: PointerEvent) {
@@ -157,27 +166,42 @@ export class CropLayer {
   private resize(point: IPoint): void {
     const newCropRect = Object.assign({}, this.cropRect);
 
+    const arX = point.x;
+    const arY = point.y;
+    let xDelta = 0;
+
     switch(this.activeGrip) {
       case this.bottomLeftGrip:
       case this.topLeftGrip:
-        newCropRect.x = point.x;
+        newCropRect.x = arX;
+        xDelta = this.cropRect.x - newCropRect.x;
         newCropRect.width = this.cropRect.x + this.cropRect.width - newCropRect.x;
         break; 
       case this.bottomRightGrip:
       case this.topRightGrip:
-        newCropRect.width = point.x - newCropRect.x;
+        newCropRect.width = arX - newCropRect.x;
+        xDelta = newCropRect.width - this.cropRect.width;
         break; 
     }
 
     switch(this.activeGrip) {
       case this.topLeftGrip:
       case this.topRightGrip:
-        newCropRect.y = point.y;
-        newCropRect.height = this.cropRect.y + this.cropRect.height - newCropRect.y;
+        if (this.aspectRatio) {
+          newCropRect.y = this.cropRect.y - xDelta / 2;
+          newCropRect.height = this.aspectRatio.getVerticalLength(newCropRect.width);
+        } else {
+          newCropRect.y = arY;
+          newCropRect.height = this.cropRect.y + this.cropRect.height - newCropRect.y;
+        }
         break; 
       case this.bottomLeftGrip:
       case this.bottomRightGrip:
-        newCropRect.height = point.y - newCropRect.y;
+        if (this.aspectRatio) {
+          newCropRect.height = this.aspectRatio.getVerticalLength(newCropRect.width);
+        } else {
+          newCropRect.height = arY - newCropRect.y;
+        }
         break; 
     }
 
@@ -195,10 +219,13 @@ export class CropLayer {
 
   private adjustCropRect() {
     if (this.aspectRatio) {
+      const centerX = this.cropRect.x + this.cropRect.width / 2;
+      const centerY = this.cropRect.y + this.cropRect.height / 2;
+
       const arWidth = this.aspectRatio.getHorizontalLength(this.cropRect.height);
       const arHeight = this.aspectRatio.getVerticalLength(this.cropRect.width);
 
-      if (arWidth / this.canvasWidth > arHeight / this.canvasHeight) {
+      if (arWidth / this.canvasWidth < arHeight / this.canvasHeight) {
         this.cropRect.width = arWidth;
       } else {
         this.cropRect.height = arHeight;
@@ -211,8 +238,19 @@ export class CropLayer {
         this.cropRect.width /= (this.cropRect.height / this.canvasHeight);
         this.cropRect.height = this.canvasHeight;
       }
-      this.cropRect.x = this.canvasWidth / 2 - this.cropRect.width / 2;
-      this.cropRect.y = this.canvasHeight / 2 - this.cropRect.height / 2;
+      this.cropRect.x = centerX - this.cropRect.width / 2;
+      this.cropRect.y = centerY - this.cropRect.height / 2;
+      if (this.cropRect.x + this.cropRect.width > this.margin + this.canvasWidth) {
+        this.cropRect.x = this.margin + this.canvasWidth - this.cropRect.width;
+      }
+      if (this.cropRect.y + this.cropRect.height > this.margin + this.canvasHeight) {
+        this.cropRect.y = this.margin + this.canvasHeight - this.cropRect.height;
+      }
+      this.cropRect.x = Math.max(this.cropRect.x, this.margin);
+      this.cropRect.y = Math.max(this.cropRect.y, this.margin);
+
+      // this.cropRect.x = this.canvasWidth / 2 - this.cropRect.width / 2;
+      // this.cropRect.y = this.canvasHeight / 2 - this.cropRect.height / 2;
 
       this.setCropRectangle(this.cropRect);
     }

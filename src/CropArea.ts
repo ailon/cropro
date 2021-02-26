@@ -453,8 +453,9 @@ export class CropArea {
     const cropLayerG = SvgHelper.createGroup();
     this.cropImage.appendChild(cropLayerG);
     this.cropLayer = new CropLayer(
-      this.paddedImageWidth,
-      this.paddedImageHeight,
+      this.imageWidth,
+      this.imageHeight,
+      this.CANVAS_MARGIN,
       cropLayerG
     );
     this.cropLayer.open();
@@ -610,7 +611,7 @@ export class CropArea {
     this.contentDiv.style.flexShrink = '1';
     // @todo
     // this.contentDiv.style.backgroundColor = this.uiStyleSettings.canvasBackgroundColor;
-    this.contentDiv.style.backgroundColor = 'white';
+    this.contentDiv.style.backgroundColor = '#333333';
     if (this.displayMode === 'popup') {
       this.contentDiv.style.maxHeight = `${
         this.windowHeight - this.popupMargin * 2 - this.toolbarHeight * 3.5
