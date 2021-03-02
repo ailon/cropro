@@ -27,7 +27,7 @@ export class CropLayer {
   private cropShadeElement: SVGPathElement;
 
   private container: SVGGElement;
-  
+
   private topLeftGrip: ResizeGrip;
   private topRightGrip: ResizeGrip;
   private bottomLeftGrip: ResizeGrip;
@@ -41,13 +41,14 @@ export class CropLayer {
   public set aspectRatio(value: AspectRatio) {
     this._aspectRatio = value;
     this.adjustCropRect();
+    this.setCropRectangle(this.cropRect);
   }
 
   constructor(
     canvasWidth: number,
     canvasHeight: number,
     margin: number,
-    container: SVGGElement,
+    container: SVGGElement
   ) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
@@ -65,7 +66,7 @@ export class CropLayer {
   public open(): void {
     this.cropShadeElement = SvgHelper.createPath('M0,0Z', [
       ['fill', '#ffffff'],
-      ['fill-opacity', '0.8']
+      ['fill-opacity', '0.8'],
     ]);
     this.container.appendChild(this.cropShadeElement);
 
@@ -136,7 +137,10 @@ export class CropLayer {
 
   private clientToLocalCoordinates(x: number, y: number): IPoint {
     const clientRect = this.container.getBoundingClientRect();
-    return { x: x - clientRect.x + this.margin, y: y - clientRect.y + this.margin };
+    return {
+      x: x - clientRect.x + this.margin,
+      y: y - clientRect.y + this.margin,
+    };
   }
 
   private onPointerDown(ev: PointerEvent) {
@@ -153,7 +157,16 @@ export class CropLayer {
 
   private onPointerMove(ev: PointerEvent) {
     if (this.activeGrip) {
-      this.resize(this.clientToLocalCoordinates(ev.clientX, ev.clientY));
+      const localPoint = this.clientToLocalCoordinates(ev.clientX, ev.clientY);
+      localPoint.x = Math.min(
+        Math.max(localPoint.x, this.margin),
+        this.margin + this.canvasWidth
+      );
+      localPoint.y = Math.min(
+        Math.max(localPoint.y, this.margin),
+        this.margin + this.canvasHeight
+      );
+      this.resize(localPoint);
     }
     ev.preventDefault();
   }
@@ -170,39 +183,46 @@ export class CropLayer {
     const arY = point.y;
     let xDelta = 0;
 
-    switch(this.activeGrip) {
+    switch (this.activeGrip) {
       case this.bottomLeftGrip:
       case this.topLeftGrip:
         newCropRect.x = arX;
         xDelta = this.cropRect.x - newCropRect.x;
-        newCropRect.width = this.cropRect.x + this.cropRect.width - newCropRect.x;
-        break; 
+        newCropRect.width =
+          this.cropRect.x + this.cropRect.width - newCropRect.x;
+        break;
       case this.bottomRightGrip:
       case this.topRightGrip:
         newCropRect.width = arX - newCropRect.x;
         xDelta = newCropRect.width - this.cropRect.width;
-        break; 
+        break;
     }
 
-    switch(this.activeGrip) {
+    switch (this.activeGrip) {
       case this.topLeftGrip:
       case this.topRightGrip:
         if (this.aspectRatio) {
-          newCropRect.y = this.cropRect.y - xDelta;
-          newCropRect.height = this.aspectRatio.getVerticalLength(newCropRect.width);
+          newCropRect.y =
+            this.cropRect.y - this.aspectRatio.getVerticalLength(xDelta);
+          newCropRect.height = this.aspectRatio.getVerticalLength(
+            newCropRect.width
+          );
         } else {
           newCropRect.y = arY;
-          newCropRect.height = this.cropRect.y + this.cropRect.height - newCropRect.y;
+          newCropRect.height =
+            this.cropRect.y + this.cropRect.height - newCropRect.y;
         }
-        break; 
+        break;
       case this.bottomLeftGrip:
       case this.bottomRightGrip:
         if (this.aspectRatio) {
-          newCropRect.height = this.aspectRatio.getVerticalLength(newCropRect.width);
+          newCropRect.height = this.aspectRatio.getVerticalLength(
+            newCropRect.width
+          );
         } else {
           newCropRect.height = arY - newCropRect.y;
         }
-        break; 
+        break;
     }
 
     if (newCropRect.width < 10) {
@@ -210,49 +230,71 @@ export class CropLayer {
       newCropRect.width = 10;
     }
     if (newCropRect.height < 10) {
-      newCropRect.y = this.cropRect.y
+      newCropRect.y = this.cropRect.y;
       newCropRect.height = 10;
     }
 
-    this.setCropRectangle(newCropRect);
-  }  
+    if (
+      newCropRect.x >= this.margin &&
+      newCropRect.y >= this.margin &&
+      newCropRect.x - this.margin + newCropRect.width <= this.canvasWidth &&
+      newCropRect.y - this.margin + newCropRect.height <= this.canvasHeight
+    ) {
+      this.setCropRectangle(newCropRect);
+    }
+  }
 
   private adjustCropRect() {
     if (this.aspectRatio) {
-      const centerX = this.cropRect.x + this.cropRect.width / 2;
-      const centerY = this.cropRect.y + this.cropRect.height / 2;
+      if (
+        Math.round(this.cropRect.height) !==
+        Math.round(this.aspectRatio.getVerticalLength(this.cropRect.width))
+      ) {
+        const centerX = this.cropRect.x + this.cropRect.width / 2;
+        const centerY = this.cropRect.y + this.cropRect.height / 2;
 
-      const arWidth = this.aspectRatio.getHorizontalLength(this.cropRect.height);
-      const arHeight = this.aspectRatio.getVerticalLength(this.cropRect.width);
+        const arWidth = this.aspectRatio.getHorizontalLength(
+          this.cropRect.height
+        );
+        const arHeight = this.aspectRatio.getVerticalLength(
+          this.cropRect.width
+        );
 
-      if (arWidth / this.canvasWidth < arHeight / this.canvasHeight) {
-        this.cropRect.width = arWidth;
-      } else {
-        this.cropRect.height = arHeight;
-      }
-      if (this.cropRect.width > this.canvasWidth) {
-        this.cropRect.height /= (this.cropRect.width / this.canvasWidth);
-        this.cropRect.width = this.canvasWidth;
-      }
-      if (this.cropRect.height > this.canvasHeight) {
-        this.cropRect.width /= (this.cropRect.height / this.canvasHeight);
-        this.cropRect.height = this.canvasHeight;
-      }
-      this.cropRect.x = centerX - this.cropRect.width / 2;
-      this.cropRect.y = centerY - this.cropRect.height / 2;
-      if (this.cropRect.x + this.cropRect.width > this.margin + this.canvasWidth) {
-        this.cropRect.x = this.margin + this.canvasWidth - this.cropRect.width;
-      }
-      if (this.cropRect.y + this.cropRect.height > this.margin + this.canvasHeight) {
-        this.cropRect.y = this.margin + this.canvasHeight - this.cropRect.height;
-      }
-      this.cropRect.x = Math.max(this.cropRect.x, this.margin);
-      this.cropRect.y = Math.max(this.cropRect.y, this.margin);
+        if (arWidth / this.canvasWidth < arHeight / this.canvasHeight) {
+          this.cropRect.width = arWidth;
+        } else {
+          this.cropRect.height = arHeight;
+        }
+        if (this.cropRect.width > this.canvasWidth) {
+          this.cropRect.height /= this.cropRect.width / this.canvasWidth;
+          this.cropRect.width = this.canvasWidth;
+        }
+        if (this.cropRect.height > this.canvasHeight) {
+          this.cropRect.width /= this.cropRect.height / this.canvasHeight;
+          this.cropRect.height = this.canvasHeight;
+        }
+        this.cropRect.x = centerX - this.cropRect.width / 2;
+        this.cropRect.y = centerY - this.cropRect.height / 2;
+        if (
+          this.cropRect.x + this.cropRect.width >
+          this.margin + this.canvasWidth
+        ) {
+          this.cropRect.x =
+            this.margin + this.canvasWidth - this.cropRect.width;
+        }
+        if (
+          this.cropRect.y + this.cropRect.height >
+          this.margin + this.canvasHeight
+        ) {
+          this.cropRect.y =
+            this.margin + this.canvasHeight - this.cropRect.height;
+        }
+        this.cropRect.x = Math.max(this.cropRect.x, this.margin);
+        this.cropRect.y = Math.max(this.cropRect.y, this.margin);
 
-      // this.cropRect.x = this.canvasWidth / 2 - this.cropRect.width / 2;
-      // this.cropRect.y = this.canvasHeight / 2 - this.cropRect.height / 2;
-
-      this.setCropRectangle(this.cropRect);
+        // this.cropRect.x = this.canvasWidth / 2 - this.cropRect.width / 2;
+        // this.cropRect.y = this.canvasHeight / 2 - this.cropRect.height / 2;
+      }
     }
   }
 }
