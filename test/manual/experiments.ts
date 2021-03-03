@@ -3,6 +3,8 @@ import { CropArea } from '../../src';
 export class Experiments {
   public showCropArea(target: HTMLImageElement): void {
     const ca = new CropArea(target);
+    // ca.gridLines = 8;
+    // ca.isGridVisible = false;
     // ca.displayMode = 'popup';
     ca.show();
   }

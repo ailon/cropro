@@ -47,6 +47,24 @@ export class CropLayer {
     this.setCropRectangle(this.cropRect);
   }
 
+  private _isGridVisible = true;
+  public get isGridVisible(): boolean {
+    return this._isGridVisible;
+  }
+  public set isGridVisible(value: boolean) {
+    this._isGridVisible = value;
+    if (this.gridContainer) {
+      SvgHelper.setAttributes(this.gridContainer, [
+        ['display', `${this._isGridVisible ? '' : 'none'}`]
+      ]);
+    }
+  }
+
+  public numberOfGridLines = 2;
+  private gridContainer: SVGGElement;
+  private horizontalGridLines: SVGLineElement[] = [];
+  private verticalGridLines: SVGLineElement[] = [];
+
   constructor(
     canvasWidth: number,
     canvasHeight: number,
@@ -72,6 +90,28 @@ export class CropLayer {
       ['fill-opacity', '0.8'],
     ]);
     this.container.appendChild(this.cropShadeElement);
+
+    this.gridContainer = SvgHelper.createGroup([
+      ['display', `${this.isGridVisible ? '' : 'none'}`]
+    ]);
+    this.container.appendChild(this.gridContainer);
+
+    for(let i = 0; i < this.numberOfGridLines; i++) {
+      this.horizontalGridLines.push(SvgHelper.createLine(0,0,0,0,[
+        ['stroke', '#ffffff'],
+        ['stroke-width', '1'],
+        ['stroke-dasharray', '3 1'],
+        ['opacity', '0.7']
+      ]));
+      this.verticalGridLines.push(SvgHelper.createLine(0,0,0,0,[
+        ['stroke', '#ffffff'],
+        ['stroke-width', '1'],
+        ['stroke-dasharray', '3 1'],
+        ['opacity', '0.7']
+      ]));
+    }
+    this.horizontalGridLines.forEach(line => this.gridContainer.appendChild(line));
+    this.verticalGridLines.forEach(line => this.gridContainer.appendChild(line));
 
     this.cropRectElement = SvgHelper.createRect(0, 0, [
       ['stroke', '#ffffff'],
@@ -100,6 +140,27 @@ export class CropLayer {
       ['width', this.cropRect.width.toString()],
       ['height', this.cropRect.height.toString()],
     ]);
+
+    const verticalGridStep = this.cropRect.height / (this.numberOfGridLines + 1);
+    this.horizontalGridLines.forEach((line, index) => {
+      const y = this.cropRect.y + verticalGridStep * (index + 1);
+      SvgHelper.setAttributes(line, [
+        ['x1', `${this.cropRect.x}`],
+        ['y1', `${y}`],
+        ['x2', `${this.cropRect.x + this.cropRect.width}`],
+        ['y2', `${y}`],
+      ]);
+    });
+    const horizontalGridStep = this.cropRect.width / (this.numberOfGridLines + 1);
+    this.verticalGridLines.forEach((line, index) => {
+      const x = this.cropRect.x + horizontalGridStep * (index + 1);
+      SvgHelper.setAttributes(line, [
+        ['x1', `${x}`],
+        ['y1', `${this.cropRect.y}`],
+        ['x2', `${x}`],
+        ['y2', `${this.cropRect.y + this.cropRect.height}`],
+      ]);
+    });
 
     SvgHelper.setAttributes(this.cropShadeElement, [
       [

@@ -72,6 +72,27 @@ export class CropArea {
 
   private cropLayer: CropLayer;
 
+  private _isGridVisible = true;
+  public get isGridVisible(): boolean {
+    return this._isGridVisible;
+  }
+  public set isGridVisible(value: boolean) {
+    this._isGridVisible = value;
+    if (this.cropLayer) {
+      this.cropLayer.isGridVisible = this._isGridVisible;
+    }
+  }
+  private _gridLines = 2;
+  public get gridLines(): number {
+    return this._gridLines;
+  }
+  public set gridLines(value: number) {
+    this._gridLines = value;
+    if (this.cropLayer) {
+      this.cropLayer.numberOfGridLines = this._gridLines;
+    }
+  }
+
   private toolbarStyleClass: StyleClass;
   private toolbarStyleColorsClass: StyleClass;
   private toolbarBlockStyleClass: StyleClass;
@@ -458,6 +479,8 @@ export class CropArea {
       this.CANVAS_MARGIN,
       cropLayerG
     );
+    this.cropLayer.numberOfGridLines = this.gridLines;
+    this.cropLayer.isGridVisible = this.isGridVisible;
     this.cropLayer.open();
     this.cropLayer.setCropRectangle({
       x: 30 + this.CANVAS_MARGIN,
@@ -684,7 +707,9 @@ export class CropArea {
 
     cropBlock.addButton(this.aspectRatioButton);
 
-    cropBlock.addButton(new ToolbarButton(GridIcon, 'Toggle grid'));
+    const gridButton = new ToolbarButton(GridIcon, 'Toggle grid');
+    gridButton.onClick = () => this.isGridVisible = !this.isGridVisible;
+    cropBlock.addButton(gridButton);
     cropBlock.addButton(new ToolbarButton(ZoomIcon, 'Zoom to selection'));
 
     const logoBlock = new ToolbarElementBlock();
