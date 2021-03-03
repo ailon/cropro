@@ -58,7 +58,7 @@ export class CropArea {
   private uiDiv: HTMLDivElement;
   private contentDiv: HTMLDivElement;
   private editorCanvas: HTMLDivElement;
-  private editingTarget: HTMLImageElement;
+  private editingTarget: SVGImageElement;
 
   private logoUI: HTMLElement;
 
@@ -92,6 +92,8 @@ export class CropArea {
       this.cropLayer.numberOfGridLines = this._gridLines;
     }
   }
+
+  private rotationAngle = 0;
 
   private toolbarStyleClass: StyleClass;
   private toolbarStyleColorsClass: StyleClass;
@@ -229,13 +231,17 @@ export class CropArea {
     this.clientToLocalCoordinates = this.clientToLocalCoordinates.bind(this);
     this.onWindowResize = this.onWindowResize.bind(this);
     this.setWindowHeight = this.setWindowHeight.bind(this);
+    this.rotateBy = this.rotateBy.bind(this);
+    this.applyRotation = this.applyRotation.bind(this);
   }
 
   private open(): void {
+    this.imageWidth = Math.round(this.target.clientWidth);
+    this.imageHeight = Math.round(this.target.clientHeight);
     this.setupResizeObserver();
+    this.initCropCanvas();
     this.setEditingTarget();
     this.setTopLeft();
-    this.initCropCanvas();
     this.initCropLayer();
     this.attachEvents();
 
@@ -368,11 +374,19 @@ export class CropArea {
   }
 
   private setEditingTargetSize() {
-    this.editingTarget.width = this.imageWidth;
-    this.editingTarget.height = this.imageHeight;
-    this.editingTarget.style.width = `${this.imageWidth}px`;
-    this.editingTarget.style.height = `${this.imageHeight}px`;
-    this.editingTarget.style.margin = `${this.CANVAS_MARGIN}px`;
+    this.editorCanvas.style.width = `${this.imageWidth + this.CANVAS_MARGIN * 2}px`;
+    this.editorCanvas.style.height = `${this.imageHeight + this.CANVAS_MARGIN * 2}px`;
+    SvgHelper.setAttributes(this.editingTarget, [
+      ['width', `${this.imageWidth}`],
+      ['height', `${this.imageHeight}`],
+      ['x', `${this.CANVAS_MARGIN}`],
+      ['y', `${this.CANVAS_MARGIN}`]
+    ]);
+    // this.editingTarget.width = this.imageWidth;
+    // this.editingTarget.height = this.imageHeight;
+    // this.editingTarget.style.width = `${this.imageWidth}px`;
+    // this.editingTarget.style.height = `${this.imageHeight}px`;
+    // this.editingTarget.style.margin = `${this.CANVAS_MARGIN}px`;
   }
 
   private resize(newWidth: number, newHeight: number) {
@@ -382,7 +396,7 @@ export class CropArea {
 
     this.imageWidth = Math.round(newWidth);
     this.imageHeight = Math.round(newHeight);
-    this.editingTarget.src = this.target.src;
+    // this.editingTarget.src = this.target.src;
     this.setEditingTargetSize();
 
     this.cropImage.setAttribute('width', this.paddedImageWidth.toString());
@@ -415,14 +429,12 @@ export class CropArea {
   }
 
   private setEditingTarget() {
-    this.imageWidth = Math.round(this.target.clientWidth);
-    this.imageHeight = Math.round(this.target.clientHeight);
-    this.editingTarget.src = this.target.src;
+    SvgHelper.setAttributes(this.editingTarget, [['href', this.target.src]]);
     this.setEditingTargetSize();
   }
 
   private setTopLeft() {
-    const targetRect = this.editingTarget.getBoundingClientRect();
+    const targetRect = this.target.getBoundingClientRect();
     const bodyRect = this.editorCanvas.getBoundingClientRect();
     this.left = targetRect.left - bodyRect.left - this.CANVAS_MARGIN;
     this.top = targetRect.top - bodyRect.top - this.CANVAS_MARGIN;
@@ -458,6 +470,16 @@ export class CropArea {
 
     this.defs = SvgHelper.createDefs();
     this.cropImage.appendChild(this.defs);
+
+    this.editingTarget = SvgHelper.createImage([
+      ['href', this.target.src],
+      ['transform-origin', 'center']
+    ]);
+    const rotate = SvgHelper.createTransform();
+    this.editingTarget.transform.baseVal.appendItem(rotate);
+    const scale = SvgHelper.createTransform();
+    this.editingTarget.transform.baseVal.appendItem(scale);
+    this.cropImage.appendChild(this.editingTarget);
 
     this.cropImageHolder.appendChild(this.cropImage);
 
@@ -660,8 +682,8 @@ export class CropArea {
     this.editorCanvas.style.pointerEvents = 'none';
     this.contentDiv.appendChild(this.editorCanvas);
 
-    this.editingTarget = document.createElement('img');
-    this.editorCanvas.appendChild(this.editingTarget);
+    // this.editingTarget = document.createElement('img');
+    // this.editorCanvas.appendChild(this.editingTarget);
 
     this.uiDiv.appendChild(this.bottomToolbar.getUI());
   }
@@ -748,8 +770,12 @@ export class CropArea {
     rotateBlock.minWidth = `${this.toolbarHeight * 2}px`;
     this.bottomToolbar.addButtonBlock(rotateBlock);
 
-    rotateBlock.addButton(new ToolbarButton(RotateLeftIcon, 'Rotate left'));
-    rotateBlock.addButton(new ToolbarButton(RotateRightIcon, 'Rotate right'));
+    const rotateLeftButton = new ToolbarButton(RotateLeftIcon, 'Rotate left');
+    rotateLeftButton.onClick = () => this.rotateBy(-90);
+    rotateBlock.addButton(rotateLeftButton);
+    const rotateRightButton = new ToolbarButton(RotateRightIcon, 'Rotate right');
+    rotateRightButton.onClick = () => this.rotateBy(90);
+    rotateBlock.addButton(rotateRightButton);
 
     const straightenBlock = new ToolbarElementBlock();
     this.bottomToolbar.addElementBlock(straightenBlock);
@@ -875,6 +901,35 @@ export class CropArea {
     }
     this.positionCropImage();
     this.positionLogo();
+  }
+
+  private rotateBy(degrees: number) {
+    let angle = (this.rotationAngle + degrees) % 360;
+    angle = angle > 180 ? angle - 360 : angle;
+    angle = angle <= -180 ? angle + 360 : angle;
+    this.rotationAngle = angle;
+
+    this.applyRotation();
+  }
+
+  private applyRotation() {
+    // scale to original for accurate measuring
+    const scale = this.editingTarget.transform.baseVal.getItem(1);
+    scale.setScale(1, 1);
+    this.editingTarget.transform.baseVal.replaceItem(scale, 1);
+
+    const rotate = this.editingTarget.transform.baseVal.getItem(0);
+    rotate.setRotate(
+      this.rotationAngle, 
+      0, 0
+    );
+    this.editingTarget.transform.baseVal.replaceItem(rotate, 0);
+
+    // measure and rescale to fit
+    const boundingBox = this.editingTarget.getBoundingClientRect();
+    const scaleFactor = Math.min(this.imageWidth / boundingBox.width, this.imageHeight / boundingBox.height);
+    scale.setScale(scaleFactor, scaleFactor);
+    this.editingTarget.transform.baseVal.replaceItem(scale, 1);
   }
 
   private addStyles() {
