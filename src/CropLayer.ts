@@ -34,6 +34,9 @@ export class CropLayer {
   private bottomRightGrip: ResizeGrip;
   private activeGrip: ResizeGrip;
 
+  private isMoving = false;
+  private previousPoint: IPoint;
+
   private _aspectRatio: AspectRatio;
   public get aspectRatio(): AspectRatio {
     return this._aspectRatio;
@@ -144,7 +147,10 @@ export class CropLayer {
   }
 
   private onPointerDown(ev: PointerEvent) {
-    if (this.topLeftGrip.ownsTarget(ev.target)) {
+    this.previousPoint = this.clientToLocalCoordinates(ev.clientX, ev.clientY);
+    if (this.cropRectElement === ev.target) {
+      this.isMoving = true;
+    } else if (this.topLeftGrip.ownsTarget(ev.target)) {
       this.activeGrip = this.topLeftGrip;
     } else if (this.bottomLeftGrip.ownsTarget(ev.target)) {
       this.activeGrip = this.bottomLeftGrip;
@@ -156,7 +162,9 @@ export class CropLayer {
   }
 
   private onPointerMove(ev: PointerEvent) {
-    if (this.activeGrip) {
+    if (this.isMoving) {
+      this.move(this.clientToLocalCoordinates(ev.clientX, ev.clientY));
+    } else if (this.activeGrip) {
       const localPoint = this.clientToLocalCoordinates(ev.clientX, ev.clientY);
       localPoint.x = Math.min(
         Math.max(localPoint.x, this.margin),
@@ -174,6 +182,23 @@ export class CropLayer {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private onPointerUp(ev: PointerEvent) {
     this.activeGrip = undefined;
+    this.isMoving = false;
+  }
+
+  private move(point: IPoint): void {
+    const xDelta = point.x - this.previousPoint.x;
+    const yDelta = point.y - this.previousPoint.y;
+
+    this.cropRect.x = Math.min(
+      Math.max(this.margin, this.cropRect.x + xDelta),
+      this.canvasWidth - this.cropRect.width + this.margin
+    );
+    this.cropRect.y = Math.min(
+      Math.max(this.margin, this.cropRect.y + yDelta),
+      this.canvasHeight - this.cropRect.height + this.margin
+    );
+    this.setCropRectangle(this.cropRect);
+    this.previousPoint = point;
   }
 
   private resize(point: IPoint): void {
