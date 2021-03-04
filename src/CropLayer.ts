@@ -3,6 +3,8 @@ import { IPoint } from './core/IPoint';
 import { ResizeGrip } from './core/ResizeGrip';
 import { SvgHelper } from './core/SvgHelper';
 
+export type CropChangeHandler = (rect: IRect) => void;
+
 export interface IRect {
   x: number;
   y: number;
@@ -55,7 +57,7 @@ export class CropLayer {
     this._isGridVisible = value;
     if (this.gridContainer) {
       SvgHelper.setAttributes(this.gridContainer, [
-        ['display', `${this._isGridVisible ? '' : 'none'}`]
+        ['display', `${this._isGridVisible ? '' : 'none'}`],
       ]);
     }
   }
@@ -64,6 +66,19 @@ export class CropLayer {
   private gridContainer: SVGGElement;
   private horizontalGridLines: SVGLineElement[] = [];
   private verticalGridLines: SVGLineElement[] = [];
+
+  private _zoomFactor = 1;
+  public get zoomFactor(): number {
+    return this._zoomFactor;
+  }
+  public set zoomFactor(value: number) {
+    this._zoomFactor = value;
+    this.setCropRectangle(this.cropRect);
+  }
+
+  private cropRectChanged = false;
+
+  public onCropChange: CropChangeHandler;
 
   constructor(
     canvasWidth: number,
@@ -92,26 +107,34 @@ export class CropLayer {
     this.container.appendChild(this.cropShadeElement);
 
     this.gridContainer = SvgHelper.createGroup([
-      ['display', `${this.isGridVisible ? '' : 'none'}`]
+      ['display', `${this.isGridVisible ? '' : 'none'}`],
     ]);
     this.container.appendChild(this.gridContainer);
 
-    for(let i = 0; i < this.numberOfGridLines; i++) {
-      this.horizontalGridLines.push(SvgHelper.createLine(0,0,0,0,[
-        ['stroke', '#ffffff'],
-        ['stroke-width', '1'],
-        ['stroke-dasharray', '3 1'],
-        ['opacity', '0.7']
-      ]));
-      this.verticalGridLines.push(SvgHelper.createLine(0,0,0,0,[
-        ['stroke', '#ffffff'],
-        ['stroke-width', '1'],
-        ['stroke-dasharray', '3 1'],
-        ['opacity', '0.7']
-      ]));
+    for (let i = 0; i < this.numberOfGridLines; i++) {
+      this.horizontalGridLines.push(
+        SvgHelper.createLine(0, 0, 0, 0, [
+          ['stroke', '#ffffff'],
+          ['stroke-width', '1'],
+          ['stroke-dasharray', '3 1'],
+          ['opacity', '0.7'],
+        ])
+      );
+      this.verticalGridLines.push(
+        SvgHelper.createLine(0, 0, 0, 0, [
+          ['stroke', '#ffffff'],
+          ['stroke-width', '1'],
+          ['stroke-dasharray', '3 1'],
+          ['opacity', '0.7'],
+        ])
+      );
     }
-    this.horizontalGridLines.forEach(line => this.gridContainer.appendChild(line));
-    this.verticalGridLines.forEach(line => this.gridContainer.appendChild(line));
+    this.horizontalGridLines.forEach((line) =>
+      this.gridContainer.appendChild(line)
+    );
+    this.verticalGridLines.forEach((line) =>
+      this.gridContainer.appendChild(line)
+    );
 
     this.cropRectElement = SvgHelper.createRect(0, 0, [
       ['stroke', '#ffffff'],
@@ -134,31 +157,49 @@ export class CropLayer {
 
   public setCropRectangle(rect: IRect): void {
     this.cropRect = rect;
+    const visibleRect = Object.assign({}, this.cropRect);
+    if (this.zoomFactor !== 1) {
+      visibleRect.width = this.cropRect.width * this.zoomFactor;
+      visibleRect.height = this.cropRect.height * this.zoomFactor;
+      visibleRect.x =
+        this.cropRect.height / this.cropRect.width <
+        this.canvasHeight / this.canvasWidth
+          ? this.margin
+          : this.margin + this.canvasWidth / 2 - visibleRect.width / 2;
+      visibleRect.y =
+        this.cropRect.height / this.cropRect.width >
+        this.canvasHeight / this.canvasWidth
+          ? this.margin
+          : this.margin + this.canvasHeight / 2 - visibleRect.height / 2;
+
+    }
     SvgHelper.setAttributes(this.cropRectElement, [
-      ['x', this.cropRect.x.toString()],
-      ['y', this.cropRect.y.toString()],
-      ['width', this.cropRect.width.toString()],
-      ['height', this.cropRect.height.toString()],
+      ['x', visibleRect.x.toString()],
+      ['y', visibleRect.y.toString()],
+      ['width', visibleRect.width.toString()],
+      ['height', visibleRect.height.toString()],
     ]);
 
-    const verticalGridStep = this.cropRect.height / (this.numberOfGridLines + 1);
+    const verticalGridStep =
+    visibleRect.height / (this.numberOfGridLines + 1);
     this.horizontalGridLines.forEach((line, index) => {
-      const y = this.cropRect.y + verticalGridStep * (index + 1);
+      const y = visibleRect.y + verticalGridStep * (index + 1);
       SvgHelper.setAttributes(line, [
-        ['x1', `${this.cropRect.x}`],
+        ['x1', `${visibleRect.x}`],
         ['y1', `${y}`],
-        ['x2', `${this.cropRect.x + this.cropRect.width}`],
+        ['x2', `${visibleRect.x + visibleRect.width}`],
         ['y2', `${y}`],
       ]);
     });
-    const horizontalGridStep = this.cropRect.width / (this.numberOfGridLines + 1);
+    const horizontalGridStep =
+    visibleRect.width / (this.numberOfGridLines + 1);
     this.verticalGridLines.forEach((line, index) => {
-      const x = this.cropRect.x + horizontalGridStep * (index + 1);
+      const x = visibleRect.x + horizontalGridStep * (index + 1);
       SvgHelper.setAttributes(line, [
         ['x1', `${x}`],
-        ['y1', `${this.cropRect.y}`],
+        ['y1', `${visibleRect.y}`],
         ['x2', `${x}`],
-        ['y2', `${this.cropRect.y + this.cropRect.height}`],
+        ['y2', `${visibleRect.y + visibleRect.height}`],
       ]);
     });
 
@@ -170,27 +211,34 @@ export class CropLayer {
           this.margin,
           this.canvasWidth,
           this.canvasHeight,
-          this.cropRect.x,
-          this.cropRect.y,
-          this.cropRect.width,
-          this.cropRect.height
+          visibleRect.x,
+          visibleRect.y,
+          visibleRect.width,
+          visibleRect.height
         ),
       ],
     ]);
 
-    this.topLeftGrip.setCenter(this.cropRect.x, this.cropRect.y);
+    this.topLeftGrip.setCenter(visibleRect.x, visibleRect.y);
     this.topRightGrip.setCenter(
-      this.cropRect.x + this.cropRect.width,
-      this.cropRect.y
+      visibleRect.x + visibleRect.width,
+      visibleRect.y
     );
     this.bottomLeftGrip.setCenter(
-      this.cropRect.x,
-      this.cropRect.y + this.cropRect.height
+      visibleRect.x,
+      visibleRect.y + visibleRect.height
     );
     this.bottomRightGrip.setCenter(
-      this.cropRect.x + this.cropRect.width,
-      this.cropRect.y + this.cropRect.height
+      visibleRect.x + visibleRect.width,
+      visibleRect.y + visibleRect.height
     );
+
+    if (this.cropRectChanged && this.onCropChange) {
+      this.cropRectChanged = false;
+      this.onCropChange(this.cropRect);
+    }
+
+    this.cropRectChanged = false;
   }
 
   private attachEvents() {
@@ -252,35 +300,42 @@ export class CropLayer {
 
     this.cropRect.x = Math.min(
       Math.max(this.margin, this.cropRect.x + xDelta),
-      this.canvasWidth - this.cropRect.width + this.margin
+      this.canvasWidth * this.zoomFactor - this.cropRect.width + this.margin
     );
     this.cropRect.y = Math.min(
       Math.max(this.margin, this.cropRect.y + yDelta),
-      this.canvasHeight - this.cropRect.height + this.margin
+      this.canvasHeight * this.zoomFactor - this.cropRect.height + this.margin
     );
-    this.setCropRectangle(this.cropRect);
+    console.log(this.cropRect);
+    if (this.onCropChange) {
+      this.cropRectChanged = true;
+      this.onCropChange(this.cropRect);
+    } else {
+      this.setCropRectangle(this.cropRect);
+    }
     this.previousPoint = point;
   }
 
   private resize(point: IPoint): void {
     const newCropRect = Object.assign({}, this.cropRect);
 
-    const arX = point.x;
-    const arY = point.y;
-    let xDelta = 0;
+    const xDelta = point.x - this.previousPoint.x;
+    const yDelta = point.y - this.previousPoint.y;
+
+    // const arX = point.x / this.zoomFactor;
+    // const arY = point.y / this.zoomFactor;
+    // let xDelta = 0;
 
     switch (this.activeGrip) {
       case this.bottomLeftGrip:
       case this.topLeftGrip:
-        newCropRect.x = arX;
-        xDelta = this.cropRect.x - newCropRect.x;
+        newCropRect.x += xDelta;
         newCropRect.width =
           this.cropRect.x + this.cropRect.width - newCropRect.x;
         break;
       case this.bottomRightGrip:
       case this.topRightGrip:
-        newCropRect.width = arX - newCropRect.x;
-        xDelta = newCropRect.width - this.cropRect.width;
+        newCropRect.width += xDelta;
         break;
     }
 
@@ -294,7 +349,7 @@ export class CropLayer {
             newCropRect.width
           );
         } else {
-          newCropRect.y = arY;
+          newCropRect.y += yDelta;
           newCropRect.height =
             this.cropRect.y + this.cropRect.height - newCropRect.y;
         }
@@ -306,7 +361,7 @@ export class CropLayer {
             newCropRect.width
           );
         } else {
-          newCropRect.height = arY - newCropRect.y;
+          newCropRect.height += yDelta;
         }
         break;
     }
@@ -323,10 +378,18 @@ export class CropLayer {
     if (
       newCropRect.x >= this.margin &&
       newCropRect.y >= this.margin &&
-      newCropRect.x - this.margin + newCropRect.width <= this.canvasWidth &&
-      newCropRect.y - this.margin + newCropRect.height <= this.canvasHeight
+      newCropRect.x - this.margin + newCropRect.width <= this.canvasWidth * this.zoomFactor &&
+      newCropRect.y - this.margin + newCropRect.height <= this.canvasHeight * this.zoomFactor
     ) {
-      this.setCropRectangle(newCropRect);
+      this.cropRect = newCropRect;
+      this.previousPoint = point;
+
+      if (this.onCropChange) {
+        this.cropRectChanged = true;
+        this.onCropChange(this.cropRect);
+      } else {
+        this.setCropRectangle(this.cropRect);
+      }
     }
   }
 

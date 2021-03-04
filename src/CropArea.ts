@@ -21,7 +21,7 @@ import FlipVerticalIcon from './assets/toolbar-icons/flip-vertical.svg';
 import { AspectRatioIconGenerator } from './core/AspectRatioIconGenerator';
 import { DropdownToolbarButton } from './core/DropdownToolbarButton';
 import { AspectRatio, IAspectRatio } from './core/AspectRatio';
-import { CropLayer } from './CropLayer';
+import { CropLayer, IRect } from './CropLayer';
 
 /**
  * Event handler type for {@linkcode MarkerArea} `render` event.
@@ -58,6 +58,7 @@ export class CropArea {
   private uiDiv: HTMLDivElement;
   private contentDiv: HTMLDivElement;
   private editorCanvas: HTMLDivElement;
+  private editingTargetContainer: SVGGElement;
   private editingTarget: SVGImageElement;
 
   private logoUI: HTMLElement;
@@ -71,6 +72,23 @@ export class CropArea {
   private styleManager: StyleManager;
 
   private cropLayer: CropLayer;
+
+  private cropRect: IRect;
+
+  private _zoomToCropEnabled = true;
+  public get zoomToCropEnabled(): boolean {
+    return this._zoomToCropEnabled;
+  }
+  public set zoomToCropEnabled(value: boolean) {
+    this._zoomToCropEnabled = value;
+    if (value) {
+      this.zoomToCrop();
+    } else {
+      this.unzoomFromCrop();
+    }
+  }
+
+  private zoomFactor = 1;
 
   private _isGridVisible = true;
   public get isGridVisible(): boolean {
@@ -233,6 +251,9 @@ export class CropArea {
     this.setWindowHeight = this.setWindowHeight.bind(this);
     this.rotateBy = this.rotateBy.bind(this);
     this.applyRotation = this.applyRotation.bind(this);
+    this.cropRectChanged = this.cropRectChanged.bind(this);
+    this.zoomToCrop = this.zoomToCrop.bind(this);
+    this.unzoomFromCrop = this.unzoomFromCrop.bind(this);
   }
 
   private open(): void {
@@ -479,7 +500,14 @@ export class CropArea {
     this.editingTarget.transform.baseVal.appendItem(rotate);
     const scale = SvgHelper.createTransform();
     this.editingTarget.transform.baseVal.appendItem(scale);
-    this.cropImage.appendChild(this.editingTarget);
+
+    this.editingTargetContainer = SvgHelper.createGroup();
+    const zoomScale = SvgHelper.createTransform();
+    this.editingTargetContainer.transform.baseVal.appendItem(zoomScale);
+
+    this.editingTargetContainer.appendChild(this.editingTarget);
+
+    this.cropImage.appendChild(this.editingTargetContainer);
 
     this.cropImageHolder.appendChild(this.cropImage);
 
@@ -492,6 +520,13 @@ export class CropArea {
   }
 
   private initCropLayer() {
+    this.cropRect = {
+      x: 80 + this.CANVAS_MARGIN,
+      y: 80 + this.CANVAS_MARGIN,
+      width: this.imageWidth - 260,
+      height: this.imageHeight - 260,
+    }
+
     // crop layer
     const cropLayerG = SvgHelper.createGroup();
     this.cropImage.appendChild(cropLayerG);
@@ -501,15 +536,47 @@ export class CropArea {
       this.CANVAS_MARGIN,
       cropLayerG
     );
+    this.cropLayer.onCropChange = this.cropRectChanged;
     this.cropLayer.numberOfGridLines = this.gridLines;
     this.cropLayer.isGridVisible = this.isGridVisible;
     this.cropLayer.open();
-    this.cropLayer.setCropRectangle({
-      x: 30 + this.CANVAS_MARGIN,
-      y: 30 + this.CANVAS_MARGIN,
-      width: this.imageWidth - 60,
-      height: this.imageHeight - 60,
-    });
+    this.cropLayer.setCropRectangle(this.cropRect);
+    if (this.zoomToCropEnabled) {
+      this.zoomToCrop();
+    }
+  }
+
+  private zoomToCrop() {
+    const zoomCenterX = this.cropRect.x - this.CANVAS_MARGIN + this.cropRect.width / 2;
+    const zoomCenterY = this.cropRect.y - this.CANVAS_MARGIN + this.cropRect.height / 2;
+    this.zoomFactor = Math.min(this.imageWidth / this.cropRect.width, this.imageHeight / this.cropRect.height);
+    SvgHelper.setAttributes(this.editingTargetContainer, [
+      ['transform-origin', `${zoomCenterX / this.imageWidth * 100}% ${zoomCenterY / this.imageHeight * 100}%`]
+    ]);
+    const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(0);
+    zoomScale.setScale(this.zoomFactor, this.zoomFactor);
+    this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 0);
+    this.cropLayer.zoomFactor = this.zoomFactor;
+  }
+
+  private unzoomFromCrop() {
+    this.zoomFactor = 1;
+    SvgHelper.setAttributes(this.editingTargetContainer, [
+      ['transform-origin', `center`]
+    ]);
+    const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(0);
+    zoomScale.setScale(1, 1);
+    this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 0);
+    this.cropLayer.zoomFactor = this.zoomFactor;
+  }
+
+  private cropRectChanged(rect: IRect) {
+    this.cropRect = rect;
+    if (this.zoomToCropEnabled) {
+      this.zoomToCrop();
+    } else {
+      this.cropLayer.zoomFactor = 1;
+    }
   }
 
   private attachEvents() {
@@ -732,7 +799,9 @@ export class CropArea {
     const gridButton = new ToolbarButton(GridIcon, 'Toggle grid');
     gridButton.onClick = () => this.isGridVisible = !this.isGridVisible;
     cropBlock.addButton(gridButton);
-    cropBlock.addButton(new ToolbarButton(ZoomIcon, 'Zoom to selection'));
+    const zoomButton = new ToolbarButton(ZoomIcon, 'Zoom to selection');
+    zoomButton.onClick = () => this.zoomToCropEnabled = !this.zoomToCropEnabled;
+    cropBlock.addButton(zoomButton);
 
     const logoBlock = new ToolbarElementBlock();
     this.topToolbar.addElementBlock(logoBlock);
