@@ -275,14 +275,14 @@ export class CropLayer {
       this.move(this.clientToLocalCoordinates(ev.clientX, ev.clientY));
     } else if (this.activeGrip) {
       const localPoint = this.clientToLocalCoordinates(ev.clientX, ev.clientY);
-      localPoint.x = Math.min(
-        Math.max(localPoint.x, this.margin),
-        this.margin + this.canvasWidth
-      );
-      localPoint.y = Math.min(
-        Math.max(localPoint.y, this.margin),
-        this.margin + this.canvasHeight
-      );
+      // localPoint.x = Math.min(
+      //   Math.max(localPoint.x, this.margin),
+      //   this.margin + this.canvasWidth
+      // );
+      // localPoint.y = Math.min(
+      //   Math.max(localPoint.y, this.margin),
+      //   this.margin + this.canvasHeight
+      // );
       this.resize(localPoint);
     }
     ev.preventDefault();
@@ -306,7 +306,6 @@ export class CropLayer {
       Math.max(this.margin, this.cropRect.y + yDelta),
       this.canvasHeight * this.zoomFactor - this.cropRect.height + this.margin
     );
-    console.log(this.cropRect);
     if (this.onCropChange) {
       this.cropRectChanged = true;
       this.onCropChange(this.cropRect);
@@ -319,8 +318,8 @@ export class CropLayer {
   private resize(point: IPoint): void {
     const newCropRect = Object.assign({}, this.cropRect);
 
-    const xDelta = point.x - this.previousPoint.x;
-    const yDelta = point.y - this.previousPoint.y;
+    let xDelta = (point.x - this.previousPoint.x); // / this.zoomFactor;
+    const yDelta = (point.y - this.previousPoint.y); // / this.zoomFactor;
 
     // const arX = point.x / this.zoomFactor;
     // const arY = point.y / this.zoomFactor;
@@ -329,12 +328,18 @@ export class CropLayer {
     switch (this.activeGrip) {
       case this.bottomLeftGrip:
       case this.topLeftGrip:
+        if (newCropRect.x + xDelta < this.margin) {
+          xDelta = this.margin - newCropRect.x;
+        }
         newCropRect.x += xDelta;
         newCropRect.width =
           this.cropRect.x + this.cropRect.width - newCropRect.x;
         break;
       case this.bottomRightGrip:
       case this.topRightGrip:
+        if (newCropRect.width + xDelta > this.canvasWidth * this.zoomFactor) {
+          xDelta = this.canvasWidth * this.zoomFactor - newCropRect.width;
+        }
         newCropRect.width += xDelta;
         break;
     }
@@ -375,14 +380,14 @@ export class CropLayer {
       newCropRect.height = 10;
     }
 
+    this.previousPoint = point;
     if (
       newCropRect.x >= this.margin &&
       newCropRect.y >= this.margin &&
-      newCropRect.x - this.margin + newCropRect.width <= this.canvasWidth * this.zoomFactor &&
-      newCropRect.y - this.margin + newCropRect.height <= this.canvasHeight * this.zoomFactor
+      newCropRect.x - this.margin + newCropRect.width <= this.canvasWidth* this.zoomFactor &&
+      newCropRect.y - this.margin + newCropRect.height <= this.canvasHeight
     ) {
       this.cropRect = newCropRect;
-      this.previousPoint = point;
 
       if (this.onCropChange) {
         this.cropRectChanged = true;

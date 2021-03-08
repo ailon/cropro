@@ -59,6 +59,7 @@ export class CropArea {
   private contentDiv: HTMLDivElement;
   private editorCanvas: HTMLDivElement;
   private editingTargetContainer: SVGGElement;
+  private editingTargetRotationContainer: SVGGElement;
   private editingTarget: SVGImageElement;
 
   private logoUI: HTMLElement;
@@ -395,13 +396,17 @@ export class CropArea {
   }
 
   private setEditingTargetSize() {
-    this.editorCanvas.style.width = `${this.imageWidth + this.CANVAS_MARGIN * 2}px`;
-    this.editorCanvas.style.height = `${this.imageHeight + this.CANVAS_MARGIN * 2}px`;
+    this.editorCanvas.style.width = `${
+      this.imageWidth + this.CANVAS_MARGIN * 2
+    }px`;
+    this.editorCanvas.style.height = `${
+      this.imageHeight + this.CANVAS_MARGIN * 2
+    }px`;
     SvgHelper.setAttributes(this.editingTarget, [
       ['width', `${this.imageWidth}`],
       ['height', `${this.imageHeight}`],
-      ['x', `${this.CANVAS_MARGIN}`],
-      ['y', `${this.CANVAS_MARGIN}`]
+      // ['x', `${this.CANVAS_MARGIN}`],
+      // ['y', `${this.CANVAS_MARGIN}`],
     ]);
     // this.editingTarget.width = this.imageWidth;
     // this.editingTarget.height = this.imageHeight;
@@ -494,18 +499,25 @@ export class CropArea {
 
     this.editingTarget = SvgHelper.createImage([
       ['href', this.target.src],
-      ['transform-origin', 'center']
     ]);
+    this.editingTargetRotationContainer = SvgHelper.createGroup([
+      ['transform-origin', `${this.imageWidth / 2}px ${this.imageHeight / 2}px`],
+    ]);
+    this.editingTargetRotationContainer.appendChild(this.editingTarget);
+    
     const rotate = SvgHelper.createTransform();
-    this.editingTarget.transform.baseVal.appendItem(rotate);
+    this.editingTargetRotationContainer.transform.baseVal.appendItem(rotate);
     const scale = SvgHelper.createTransform();
-    this.editingTarget.transform.baseVal.appendItem(scale);
+    this.editingTargetRotationContainer.transform.baseVal.appendItem(scale);
 
     this.editingTargetContainer = SvgHelper.createGroup();
+    const zoomTranslate = SvgHelper.createTransform();
+    zoomTranslate.setTranslate(this.CANVAS_MARGIN, this.CANVAS_MARGIN);
+    this.editingTargetContainer.transform.baseVal.appendItem(zoomTranslate);
     const zoomScale = SvgHelper.createTransform();
     this.editingTargetContainer.transform.baseVal.appendItem(zoomScale);
 
-    this.editingTargetContainer.appendChild(this.editingTarget);
+    this.editingTargetContainer.appendChild(this.editingTargetRotationContainer);
 
     this.cropImage.appendChild(this.editingTargetContainer);
 
@@ -525,7 +537,7 @@ export class CropArea {
       y: 80 + this.CANVAS_MARGIN,
       width: this.imageWidth - 260,
       height: this.imageHeight - 260,
-    }
+    };
 
     // crop layer
     const cropLayerG = SvgHelper.createGroup();
@@ -547,26 +559,65 @@ export class CropArea {
   }
 
   private zoomToCrop() {
-    const zoomCenterX = this.cropRect.x - this.CANVAS_MARGIN + this.cropRect.width / 2;
-    const zoomCenterY = this.cropRect.y - this.CANVAS_MARGIN + this.cropRect.height / 2;
-    this.zoomFactor = Math.min(this.imageWidth / this.cropRect.width, this.imageHeight / this.cropRect.height);
+    const zoomCenterX =
+      this.cropRect.x - this.CANVAS_MARGIN + this.cropRect.width / 2;
+    const zoomCenterY =
+      this.cropRect.y - this.CANVAS_MARGIN + this.cropRect.height / 2;
+
+    this.zoomFactor = Math.min(
+      this.imageWidth / this.cropRect.width,
+      this.imageHeight / this.cropRect.height
+    );
     SvgHelper.setAttributes(this.editingTargetContainer, [
-      ['transform-origin', `${zoomCenterX / this.imageWidth * 100}% ${zoomCenterY / this.imageHeight * 100}%`]
+      [
+        'transform-origin',
+        `${zoomCenterX}px ${zoomCenterY}px`,
+      ],
     ]);
-    const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(0);
+    // SvgHelper.setAttributes(this.editingTargetContainer, [
+    //   [
+    //     'transform-origin',
+    //     `${(zoomCenterX / this.imageWidth) * 100}% ${
+    //       (zoomCenterY / this.imageHeight) * 100
+    //     }%`,
+    //   ],
+    // ]);
+
+    const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(0);
+    // zoomTranslate.setTranslate(
+    //   this.cropRect.x * this.zoomFactor, // + this.CANVAS_MARGIN * this.zoomFactor + this.CANVAS_MARGIN, 
+    //   this.cropRect.y * this.zoomFactor // + this.CANVAS_MARGIN * this.zoomFactor + this.CANVAS_MARGIN
+    // );
+    // zoomTranslate.setTranslate(
+    //   (this.cropRect.x - this.CANVAS_MARGIN + this.cropRect.width / 2) * this.zoomFactor - zoomCenterX,
+    //   (this.cropRect.y - this.CANVAS_MARGIN + this.cropRect.height / 2) * this.zoomFactor - zoomCenterY,
+    // );
+    zoomTranslate.setTranslate(
+      this.imageWidth / 2 - zoomCenterX + this.CANVAS_MARGIN,
+      this.imageHeight / 2 - zoomCenterY + this.CANVAS_MARGIN
+    );
+    this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
+
+    const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
     zoomScale.setScale(this.zoomFactor, this.zoomFactor);
-    this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 0);
+    this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
+
     this.cropLayer.zoomFactor = this.zoomFactor;
   }
 
   private unzoomFromCrop() {
     this.zoomFactor = 1;
     SvgHelper.setAttributes(this.editingTargetContainer, [
-      ['transform-origin', `center`]
+      ['transform-origin', `center`],
     ]);
-    const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(0);
+    const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(0);
+    zoomTranslate.setTranslate(this.CANVAS_MARGIN, this.CANVAS_MARGIN);
+    this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
+
+    const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
     zoomScale.setScale(1, 1);
-    this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 0);
+    this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
+
     this.cropLayer.zoomFactor = this.zoomFactor;
   }
 
@@ -797,10 +848,11 @@ export class CropArea {
     cropBlock.addButton(this.aspectRatioButton);
 
     const gridButton = new ToolbarButton(GridIcon, 'Toggle grid');
-    gridButton.onClick = () => this.isGridVisible = !this.isGridVisible;
+    gridButton.onClick = () => (this.isGridVisible = !this.isGridVisible);
     cropBlock.addButton(gridButton);
     const zoomButton = new ToolbarButton(ZoomIcon, 'Zoom to selection');
-    zoomButton.onClick = () => this.zoomToCropEnabled = !this.zoomToCropEnabled;
+    zoomButton.onClick = () =>
+      (this.zoomToCropEnabled = !this.zoomToCropEnabled);
     cropBlock.addButton(zoomButton);
 
     const logoBlock = new ToolbarElementBlock();
@@ -842,7 +894,10 @@ export class CropArea {
     const rotateLeftButton = new ToolbarButton(RotateLeftIcon, 'Rotate left');
     rotateLeftButton.onClick = () => this.rotateBy(-90);
     rotateBlock.addButton(rotateLeftButton);
-    const rotateRightButton = new ToolbarButton(RotateRightIcon, 'Rotate right');
+    const rotateRightButton = new ToolbarButton(
+      RotateRightIcon,
+      'Rotate right'
+    );
     rotateRightButton.onClick = () => this.rotateBy(90);
     rotateBlock.addButton(rotateRightButton);
 
@@ -983,22 +1038,22 @@ export class CropArea {
 
   private applyRotation() {
     // scale to original for accurate measuring
-    const scale = this.editingTarget.transform.baseVal.getItem(1);
+    const scale = this.editingTargetRotationContainer.transform.baseVal.getItem(1);
     scale.setScale(1, 1);
-    this.editingTarget.transform.baseVal.replaceItem(scale, 1);
+    this.editingTargetRotationContainer.transform.baseVal.replaceItem(scale, 1);
 
-    const rotate = this.editingTarget.transform.baseVal.getItem(0);
-    rotate.setRotate(
-      this.rotationAngle, 
-      0, 0
-    );
-    this.editingTarget.transform.baseVal.replaceItem(rotate, 0);
+    const rotate = this.editingTargetRotationContainer.transform.baseVal.getItem(0);
+    rotate.setRotate(this.rotationAngle, 0, 0);
+    this.editingTargetRotationContainer.transform.baseVal.replaceItem(rotate, 0);
 
     // measure and rescale to fit
     const boundingBox = this.editingTarget.getBoundingClientRect();
-    const scaleFactor = Math.min(this.imageWidth / boundingBox.width, this.imageHeight / boundingBox.height);
+    const scaleFactor = Math.min(
+      this.imageWidth / boundingBox.width,
+      this.imageHeight / boundingBox.height
+    );
     scale.setScale(scaleFactor, scaleFactor);
-    this.editingTarget.transform.baseVal.replaceItem(scale, 1);
+    this.editingTargetRotationContainer.transform.baseVal.replaceItem(scale, 1);
   }
 
   private addStyles() {
