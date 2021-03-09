@@ -349,7 +349,7 @@ export class CropLayer {
       case this.topRightGrip:
         if (this.aspectRatio) {
           newCropRect.y =
-            this.cropRect.y - this.aspectRatio.getVerticalLength(xDelta);
+            this.cropRect.y - (this.activeGrip === this.topLeftGrip ? -1 : 1) * this.aspectRatio.getVerticalLength(xDelta);
           newCropRect.height = this.aspectRatio.getVerticalLength(
             newCropRect.width
           );
