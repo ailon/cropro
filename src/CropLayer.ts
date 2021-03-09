@@ -300,11 +300,11 @@ export class CropLayer {
 
     this.cropRect.x = Math.min(
       Math.max(this.margin, this.cropRect.x + xDelta),
-      this.canvasWidth * this.zoomFactor - this.cropRect.width + this.margin
+      this.canvasWidth- this.cropRect.width + this.margin
     );
     this.cropRect.y = Math.min(
       Math.max(this.margin, this.cropRect.y + yDelta),
-      this.canvasHeight * this.zoomFactor - this.cropRect.height + this.margin
+      this.canvasHeight - this.cropRect.height + this.margin
     );
     if (this.onCropChange) {
       this.cropRectChanged = true;
@@ -384,7 +384,7 @@ export class CropLayer {
     if (
       newCropRect.x >= this.margin &&
       newCropRect.y >= this.margin &&
-      newCropRect.x - this.margin + newCropRect.width <= this.canvasWidth* this.zoomFactor &&
+      newCropRect.x - this.margin + newCropRect.width <= this.canvasWidth &&
       newCropRect.y - this.margin + newCropRect.height <= this.canvasHeight
     ) {
       this.cropRect = newCropRect;
