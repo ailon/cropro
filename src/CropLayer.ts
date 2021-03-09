@@ -295,8 +295,14 @@ export class CropLayer {
   }
 
   private move(point: IPoint): void {
-    const xDelta = point.x - this.previousPoint.x;
-    const yDelta = point.y - this.previousPoint.y;
+    let xDelta = point.x - this.previousPoint.x;
+    let yDelta = point.y - this.previousPoint.y;
+
+    // in zoom-to-crop mode move in opposite direction (pan the image)
+    if (this.zoomFactor !== 1) {
+      xDelta = -xDelta / this.zoomFactor;
+      yDelta = -yDelta / this.zoomFactor;
+    }
 
     this.cropRect.x = Math.min(
       Math.max(this.margin, this.cropRect.x + xDelta),
