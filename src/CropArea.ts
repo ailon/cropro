@@ -22,6 +22,7 @@ import { AspectRatioIconGenerator } from './core/AspectRatioIconGenerator';
 import { DropdownToolbarButton } from './core/DropdownToolbarButton';
 import { AspectRatio, IAspectRatio } from './core/AspectRatio';
 import { CropLayer, IRect } from './CropLayer';
+import { StraightenControl } from './core/StraightenControl';
 
 /**
  * Event handler type for {@linkcode MarkerArea} `render` event.
@@ -61,6 +62,8 @@ export class CropArea {
   private editingTargetContainer: SVGGElement;
   private editingTargetRotationContainer: SVGGElement;
   private editingTarget: SVGImageElement;
+
+  private straightener: StraightenControl;
 
   private logoUI: HTMLElement;
 
@@ -121,7 +124,9 @@ export class CropArea {
   private toolbarButtonStyleColorsClass: StyleClass;
   private toolbarActiveButtonStyleColorsClass: StyleClass;
   private toolbarDropdownStyleClass: StyleClass;
-
+  private toolbarStraightenerStyleClass: StyleClass;
+  private toolbarStraightenerStyleColorsClass: StyleClass;
+  
   /**
    * `targetRoot` is used to set an alternative positioning root for the UI.
    *
@@ -200,7 +205,9 @@ export class CropArea {
   /**
    * Base height of the toolbar block in pixels.
    */
-  toolbarHeight = 40;
+  public toolbarHeight = 40;
+  
+  public straightenerWidth = 100;
 
   public aspectRatios: IAspectRatio[] = [
     { horizontal: 0, vertical: 0 },
@@ -904,10 +911,18 @@ export class CropArea {
     const straightenBlock = new ToolbarElementBlock();
     this.bottomToolbar.addElementBlock(straightenBlock);
 
-    const tempStraightener = document.createElement('div');
-    tempStraightener.innerHTML = '-------';
-    tempStraightener.style.color = 'white';
-    straightenBlock.addElement(tempStraightener);
+    // const tempStraightener = document.createElement('div');
+    // tempStraightener.innerHTML = '-------';
+    // tempStraightener.style.color = 'white';
+    this.straightener = new StraightenControl('Straighten');
+    this.straightener.className = this.toolbarStraightenerStyleClass.name;
+    this.straightener.colorsClassName = this.toolbarStraightenerStyleColorsClass.name;
+    this.straightener.onAngleChange = (delta: number) => {
+        this.rotateBy(delta);
+        this.straightener.angle = this.rotationAngle;
+    };
+    straightenBlock.addElement(this.straightener.getUI());
+
 
     const flipBlock = new ToolbarButtonBlock();
     flipBlock.minWidth = `${this.toolbarHeight * 2}px`;
@@ -1163,5 +1178,29 @@ export class CropArea {
     `
       )
     );
+
+    this.toolbarStraightenerStyleClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar_straightener',
+        `
+      display: inline-block;
+      width: ${this.straightenerWidth}px;
+      height: ${this.toolbarHeight - buttonPadding * 2}px;
+      padding: ${buttonPadding}px;
+      cursor: default;
+      user-select: none;
+      box-sizing: content-box;
+    `
+      )
+    );
+    this.toolbarStraightenerStyleColorsClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar_straightener_colors',
+        `
+      fill: ${this.styleManager.settings.toolbarColor};
+    `
+      )
+    );
+
   }
 }
