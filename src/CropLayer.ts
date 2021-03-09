@@ -207,10 +207,10 @@ export class CropLayer {
       [
         'd',
         SvgHelper.getHollowRectanglePath(
-          this.margin,
-          this.margin,
-          this.canvasWidth,
-          this.canvasHeight,
+          0, // this.margin,
+          0, // this.margin,
+          this.canvasWidth + this.margin * 2,
+          this.canvasHeight + this.margin * 2,
           visibleRect.x,
           visibleRect.y,
           visibleRect.width,
