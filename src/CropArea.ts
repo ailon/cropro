@@ -1038,6 +1038,8 @@ export class CropArea {
 
   private applyRotation() {
     // scale to original for accurate measuring
+    const ztcCurrent = this.zoomToCropEnabled;
+    this.zoomToCropEnabled = false;
     const scale = this.editingTargetRotationContainer.transform.baseVal.getItem(1);
     scale.setScale(1, 1);
     this.editingTargetRotationContainer.transform.baseVal.replaceItem(scale, 1);
@@ -1054,6 +1056,8 @@ export class CropArea {
     );
     scale.setScale(scaleFactor, scaleFactor);
     this.editingTargetRotationContainer.transform.baseVal.replaceItem(scale, 1);
+
+    this.zoomToCropEnabled = ztcCurrent;
   }
 
   private addStyles() {
