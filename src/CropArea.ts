@@ -94,6 +94,9 @@ export class CropArea {
 
   private zoomFactor = 1;
 
+  private flippedHorizontally = false;
+  private flippedVertically = false;
+
   private _isGridVisible = true;
   public get isGridVisible(): boolean {
     return this._isGridVisible;
@@ -274,6 +277,9 @@ export class CropArea {
     this.unzoomFromCrop = this.unzoomFromCrop.bind(this);
     this.rotateLeftButtonClicked = this.rotateLeftButtonClicked.bind(this);
     this.rotateRightButtonClicked = this.rotateRightButtonClicked.bind(this);
+    this.flipHorizontallyButtonClicked = this.flipHorizontallyButtonClicked.bind(this);
+    this.flipVerticallyButtonClicked = this.flipVerticallyButtonClicked.bind(this);
+    this.applyFlip = this.applyFlip.bind(this);
   }
 
   private open(): void {
@@ -516,7 +522,16 @@ export class CropArea {
     this.defs = SvgHelper.createDefs();
     this.cropImage.appendChild(this.defs);
 
-    this.editingTarget = SvgHelper.createImage([['href', this.target.src]]);
+    this.editingTarget = SvgHelper.createImage([
+      ['href', this.target.src],
+      [
+        'transform-origin',
+        `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
+      ]
+    ]);
+    const flip = SvgHelper.createTransform();
+    this.editingTarget.transform.baseVal.appendItem(flip);
+
     this.editingTargetRotationContainer = SvgHelper.createGroup([
       [
         'transform-origin',
@@ -947,10 +962,13 @@ export class CropArea {
     flipBlock.contentAlign = 'end';
     this.bottomToolbar.addButtonBlock(flipBlock);
 
-    flipBlock.addButton(
-      new ToolbarButton(FlipHotizontalIcon, 'Flip horizontal')
-    );
-    flipBlock.addButton(new ToolbarButton(FlipVerticalIcon, 'Flip vertical'));
+    const flipHorButton = new ToolbarButton(FlipHotizontalIcon, 'Flip horizontal');
+    flipHorButton.onClick = this.flipHorizontallyButtonClicked;
+    flipBlock.addButton(flipHorButton);
+
+    const flipVerButton = new ToolbarButton(FlipVerticalIcon, 'Flip vertical');
+    flipVerButton.onClick = this.flipVerticallyButtonClicked;
+    flipBlock.addButton(flipVerButton);
   }
 
   private ratioButtonClicked(ratio: IAspectRatio) {
@@ -1122,6 +1140,22 @@ export class CropArea {
     this.editingTargetRotationContainer.transform.baseVal.replaceItem(scale, 1);
 
     this.zoomToCropEnabled = ztcCurrent;
+  }
+
+  private flipHorizontallyButtonClicked() {
+    this.flippedHorizontally = !this.flippedHorizontally;
+    this.applyFlip();
+  }
+
+  private flipVerticallyButtonClicked() {
+    this.flippedVertically = !this.flippedVertically;
+    this.applyFlip();
+  }
+
+  private applyFlip() {
+    const flip = this.editingTarget.transform.baseVal.getItem(0);
+    flip.setScale(this.flippedHorizontally ? -1 : 1, this.flippedVertically ? -1 : 1);
+    this.editingTarget.transform.baseVal.replaceItem(flip, 0);
   }
 
   private addStyles() {
