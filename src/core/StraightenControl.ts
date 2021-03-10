@@ -1,4 +1,4 @@
-import { SvgHelper } from '..';
+import { SvgHelper } from './SvgHelper';
 import { IPoint } from './IPoint';
 
 /**
@@ -15,14 +15,8 @@ export class StraightenControl {
   }
   public set angle(value: number) {
     this._angle = value;
-    if (this.angleLabelText) {
-      this.angleLabelText.innerHTML = `${Math.round(this._angle)}`;
-    }
-    if (this.scaleShape) {
-      const translate = this.scaleShape.transform.baseVal.getItem(0);
-      translate.setTranslate((this._angle % 5) * 5 - 25, 0);
-      this.scaleShape.transform.baseVal.replaceItem(translate, 0);
-    }
+    this.setAngleLabel();
+    this.positionScaleShape();
   }
   public onAngleChange: AngleChangeHandler;
 
@@ -39,6 +33,9 @@ export class StraightenControl {
   public className: string;
   public colorsClassName: string;
 
+  public width = 101;
+  public height = 24;
+
   constructor(title: string) {
     this.title = title;
     this.uiContainer = document.createElement('div');
@@ -46,6 +43,9 @@ export class StraightenControl {
     this.onPointerDown = this.onPointerDown.bind(this);
     this.onPointerMove = this.onPointerMove.bind(this);
     this.onPointerUp = this.onPointerUp.bind(this);
+
+    this.setAngleLabel = this.setAngleLabel.bind(this);
+    this.positionScaleShape = this.positionScaleShape.bind(this);
   }
 
   public getUI(): HTMLElement {
@@ -60,6 +60,9 @@ export class StraightenControl {
 
     this.uiContainer.appendChild(this.controlContainer);
     this.uiContainer.style.display = 'inline-block';
+
+    this.setAngleLabel();
+    this.positionScaleShape();
 
     return this.uiContainer;
   }
@@ -83,20 +86,37 @@ export class StraightenControl {
     this.isDragging = false;
   }
 
+  private setAngleLabel() {
+    if (this.angleLabelText) {
+      this.angleLabelText.innerHTML = `${Math.round(this._angle)}`;
+      const textBBox = this.angleLabelText.getBBox();
+      SvgHelper.setAttributes(this.angleLabelElement, [
+        ['x', ((this.width - textBBox.width) / 2).toString()],
+        ['y', (this.height / 2).toString()],
+      ]);
+    }
+  }
+
+  private positionScaleShape() {
+    if (this.scaleShape) {
+      const translate = this.scaleShape.transform.baseVal.getItem(0);
+      translate.setTranslate((this._angle % 5) * 5 - 25, 0);
+      this.scaleShape.transform.baseVal.replaceItem(translate, 0);
+    }
+  }
+
   private getVisual(): SVGSVGElement {
     const degreeStep = 5;
-    const width = 100;
-    const height = 24;
 
     const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     icon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    icon.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    icon.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
 
     document.body.appendChild(icon);
 
-    let d = `M0,${height-1} v${-height / 3}h1v${height/3}`;
-    for (let i = 1; i <= (width / degreeStep + 10); i++) {
-      const tipHeight = i % 5 === 0 ? height / 3 : height / 6;
+    let d = `M0,${this.height-1} v${-this.height / 3}h1v${this.height/3}`;
+    for (let i = 1; i <= (this.width / degreeStep + 10); i++) {
+      const tipHeight = i % 5 === 0 ? this.height / 3 : this.height / 6;
       d += `h4v${-tipHeight}h1v${tipHeight}`;
     }
     d+='v1H0Z';
@@ -109,18 +129,15 @@ export class StraightenControl {
     this.angleLabelElement = SvgHelper.createText([
       ['x', '0'],
       ['y', '0'],
-      ['font-size', '7px'],
+      ['font-size', '10px'],
       ['font-family', 'monospace'],
     ]);
-    this.angleLabelText = SvgHelper.createTSpan(`${this.angle}`);
+    this.angleLabelText = SvgHelper.createTSpan('');
     this.angleLabelElement.appendChild(this.angleLabelText);
+    const degLabel = SvgHelper.createTSpan('');
+    degLabel.innerHTML = '&deg;';
+    this.angleLabelElement.appendChild(degLabel);
     icon.appendChild(this.angleLabelElement);
-
-    const textBBox = this.angleLabelElement.getBBox();
-    SvgHelper.setAttributes(this.angleLabelElement, [
-      ['x', ((width - textBBox.width) / 2).toString()],
-      ['y', ((height - textBBox.height) / 2 - textBBox.y).toString()],
-    ]);
 
     document.body.removeChild(icon);
 

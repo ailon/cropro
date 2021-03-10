@@ -115,7 +115,16 @@ export class CropArea {
     }
   }
 
-  private rotationAngle = 0;
+  private _rotationAngle = 0;
+  public get rotationAngle(): number {
+    return this._rotationAngle;
+  }
+  public set rotationAngle(value: number) {
+    this._rotationAngle = value;
+    if (this.straightener) {
+      this.straightener.angle = this._rotationAngle;
+    }
+  }
 
   private toolbarStyleClass: StyleClass;
   private toolbarStyleColorsClass: StyleClass;
@@ -126,7 +135,7 @@ export class CropArea {
   private toolbarDropdownStyleClass: StyleClass;
   private toolbarStraightenerStyleClass: StyleClass;
   private toolbarStraightenerStyleColorsClass: StyleClass;
-  
+
   /**
    * `targetRoot` is used to set an alternative positioning root for the UI.
    *
@@ -206,7 +215,7 @@ export class CropArea {
    * Base height of the toolbar block in pixels.
    */
   public toolbarHeight = 40;
-  
+
   public straightenerWidth = 100;
 
   public aspectRatios: IAspectRatio[] = [
@@ -262,6 +271,8 @@ export class CropArea {
     this.cropRectChanged = this.cropRectChanged.bind(this);
     this.zoomToCrop = this.zoomToCrop.bind(this);
     this.unzoomFromCrop = this.unzoomFromCrop.bind(this);
+    this.rotateLeftButtonClicked = this.rotateLeftButtonClicked.bind(this);
+    this.rotateRightButtonClicked = this.rotateRightButtonClicked.bind(this);
   }
 
   private open(): void {
@@ -504,14 +515,15 @@ export class CropArea {
     this.defs = SvgHelper.createDefs();
     this.cropImage.appendChild(this.defs);
 
-    this.editingTarget = SvgHelper.createImage([
-      ['href', this.target.src],
-    ]);
+    this.editingTarget = SvgHelper.createImage([['href', this.target.src]]);
     this.editingTargetRotationContainer = SvgHelper.createGroup([
-      ['transform-origin', `${this.imageWidth / 2}px ${this.imageHeight / 2}px`],
+      [
+        'transform-origin',
+        `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
+      ],
     ]);
     this.editingTargetRotationContainer.appendChild(this.editingTarget);
-    
+
     const rotate = SvgHelper.createTransform();
     this.editingTargetRotationContainer.transform.baseVal.appendItem(rotate);
     const scale = SvgHelper.createTransform();
@@ -524,7 +536,9 @@ export class CropArea {
     const zoomScale = SvgHelper.createTransform();
     this.editingTargetContainer.transform.baseVal.appendItem(zoomScale);
 
-    this.editingTargetContainer.appendChild(this.editingTargetRotationContainer);
+    this.editingTargetContainer.appendChild(
+      this.editingTargetRotationContainer
+    );
 
     this.cropImage.appendChild(this.editingTargetContainer);
 
@@ -576,10 +590,7 @@ export class CropArea {
       this.imageHeight / this.cropRect.height
     );
     SvgHelper.setAttributes(this.editingTargetContainer, [
-      [
-        'transform-origin',
-        `${zoomCenterX}px ${zoomCenterY}px`,
-      ],
+      ['transform-origin', `${zoomCenterX}px ${zoomCenterY}px`],
     ]);
     // SvgHelper.setAttributes(this.editingTargetContainer, [
     //   [
@@ -590,9 +601,11 @@ export class CropArea {
     //   ],
     // ]);
 
-    const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(0);
+    const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
+      0
+    );
     // zoomTranslate.setTranslate(
-    //   this.cropRect.x * this.zoomFactor, // + this.CANVAS_MARGIN * this.zoomFactor + this.CANVAS_MARGIN, 
+    //   this.cropRect.x * this.zoomFactor, // + this.CANVAS_MARGIN * this.zoomFactor + this.CANVAS_MARGIN,
     //   this.cropRect.y * this.zoomFactor // + this.CANVAS_MARGIN * this.zoomFactor + this.CANVAS_MARGIN
     // );
     // zoomTranslate.setTranslate(
@@ -617,7 +630,9 @@ export class CropArea {
     SvgHelper.setAttributes(this.editingTargetContainer, [
       ['transform-origin', `center`],
     ]);
-    const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(0);
+    const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
+      0
+    );
     zoomTranslate.setTranslate(this.CANVAS_MARGIN, this.CANVAS_MARGIN);
     this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
 
@@ -811,6 +826,8 @@ export class CropArea {
     // this.editorCanvas.appendChild(this.editingTarget);
 
     this.uiDiv.appendChild(this.bottomToolbar.getUI());
+
+    this.straightener.angle = this.rotationAngle;
   }
 
   private addToolbars() {
@@ -899,13 +916,13 @@ export class CropArea {
     this.bottomToolbar.addButtonBlock(rotateBlock);
 
     const rotateLeftButton = new ToolbarButton(RotateLeftIcon, 'Rotate left');
-    rotateLeftButton.onClick = () => this.rotateBy(-90);
+    rotateLeftButton.onClick = this.rotateLeftButtonClicked;
     rotateBlock.addButton(rotateLeftButton);
     const rotateRightButton = new ToolbarButton(
       RotateRightIcon,
       'Rotate right'
     );
-    rotateRightButton.onClick = () => this.rotateBy(90);
+    rotateRightButton.onClick = this.rotateRightButtonClicked;
     rotateBlock.addButton(rotateRightButton);
 
     const straightenBlock = new ToolbarElementBlock();
@@ -918,11 +935,10 @@ export class CropArea {
     this.straightener.className = this.toolbarStraightenerStyleClass.name;
     this.straightener.colorsClassName = this.toolbarStraightenerStyleColorsClass.name;
     this.straightener.onAngleChange = (delta: number) => {
-        this.rotateBy(delta);
-        this.straightener.angle = this.rotationAngle;
+      this.rotateBy(delta);
+      this.straightener.angle = this.rotationAngle;
     };
     straightenBlock.addElement(this.straightener.getUI());
-
 
     const flipBlock = new ToolbarButtonBlock();
     flipBlock.minWidth = `${this.toolbarHeight * 2}px`;
@@ -1042,26 +1058,57 @@ export class CropArea {
     this.positionLogo();
   }
 
-  private rotateBy(degrees: number) {
-    let angle = (this.rotationAngle + degrees) % 360;
+  private rotateLeftButtonClicked() {
+    let angle = this.rotationAngle - 90;
+    if (this.rotationAngle % 90 !== 0) {
+      angle +=
+        this.rotationAngle >= 0
+          ? 90 - (this.rotationAngle % 90)
+          : -this.rotationAngle % 90;
+    }
+    this.rotateTo(angle);
+  }
+
+  private rotateRightButtonClicked() {
+    let angle = this.rotationAngle + 90;
+    if (this.rotationAngle % 90 !== 0) {
+      angle -=
+        this.rotationAngle >= 0
+          ? this.rotationAngle % 90
+          : 90 + (this.rotationAngle % 90);
+    }
+    this.rotateTo(angle);
+  }
+
+  private rotateTo(angle: number) {
     angle = angle > 180 ? angle - 360 : angle;
     angle = angle <= -180 ? angle + 360 : angle;
     this.rotationAngle = angle;
 
     this.applyRotation();
   }
+  private rotateBy(degrees: number) {
+    this.rotateTo((this.rotationAngle + degrees) % 360);
+  }
 
   private applyRotation() {
     // scale to original for accurate measuring
     const ztcCurrent = this.zoomToCropEnabled;
     this.zoomToCropEnabled = false;
-    const scale = this.editingTargetRotationContainer.transform.baseVal.getItem(1);
+    const scale = this.editingTargetRotationContainer.transform.baseVal.getItem(
+      1
+    );
     scale.setScale(1, 1);
     this.editingTargetRotationContainer.transform.baseVal.replaceItem(scale, 1);
 
-    const rotate = this.editingTargetRotationContainer.transform.baseVal.getItem(0);
+    const rotate = this.editingTargetRotationContainer.transform.baseVal.getItem(
+      0
+    );
     rotate.setRotate(this.rotationAngle, 0, 0);
-    this.editingTargetRotationContainer.transform.baseVal.replaceItem(rotate, 0);
+    this.editingTargetRotationContainer.transform.baseVal.replaceItem(
+      rotate,
+      0
+    );
 
     // measure and rescale to fit
     const boundingBox = this.editingTarget.getBoundingClientRect();
@@ -1201,6 +1248,5 @@ export class CropArea {
     `
       )
     );
-
   }
 }
