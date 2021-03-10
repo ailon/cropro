@@ -22,7 +22,9 @@ export class Toolbar {
   }
 
   public addElementBlock(block: ToolbarElementBlock): void {
-    block.className = this.blockClassName;
+    if (block.className === undefined) {
+      block.className = this.blockClassName;
+    }
     this.blocks.push(block);
   }
 

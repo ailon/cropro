@@ -133,6 +133,7 @@ export class CropArea {
   private toolbarButtonStyleColorsClass: StyleClass;
   private toolbarActiveButtonStyleColorsClass: StyleClass;
   private toolbarDropdownStyleClass: StyleClass;
+  private toolbarStraightenerBlockStyleClass: StyleClass;
   private toolbarStraightenerStyleClass: StyleClass;
   private toolbarStraightenerStyleColorsClass: StyleClass;
 
@@ -216,7 +217,7 @@ export class CropArea {
    */
   public toolbarHeight = 40;
 
-  public straightenerWidth = 100;
+  public straightenerWidth = 300;
 
   public aspectRatios: IAspectRatio[] = [
     { horizontal: 0, vertical: 0 },
@@ -926,6 +927,7 @@ export class CropArea {
     rotateBlock.addButton(rotateRightButton);
 
     const straightenBlock = new ToolbarElementBlock();
+    straightenBlock.className = this.toolbarStraightenerBlockStyleClass.name;
     this.bottomToolbar.addElementBlock(straightenBlock);
 
     // const tempStraightener = document.createElement('div');
@@ -1226,12 +1228,24 @@ export class CropArea {
       )
     );
 
+    this.toolbarStraightenerBlockStyleClass = this.styleManager.addClass(
+      new StyleClass(
+        'toolbar_straightener_block',
+        `
+      display: flex;
+      overflow: hidden;
+      justify-content: center;
+      -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+    `
+      )
+    );
     this.toolbarStraightenerStyleClass = this.styleManager.addClass(
       new StyleClass(
         'toolbar_straightener',
         `
-      display: inline-block;
-      width: ${this.straightenerWidth}px;
+      display: flex;
+      overflow: hidden;
+      justify-content: center;
       height: ${this.toolbarHeight - buttonPadding * 2}px;
       padding: ${buttonPadding}px;
       cursor: default;

@@ -33,7 +33,7 @@ export class StraightenControl {
   public className: string;
   public colorsClassName: string;
 
-  public width = 101;
+  public width = 401;
   public height = 24;
 
   constructor(title: string) {
@@ -110,7 +110,10 @@ export class StraightenControl {
 
     const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     icon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    icon.setAttribute('width', `${this.width}px`);
+    icon.setAttribute('height', `${this.height}px`);
     icon.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+    icon.style.flexShrink = '0';
 
     document.body.appendChild(icon);
 
