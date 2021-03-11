@@ -23,6 +23,7 @@ import { DropdownToolbarButton } from './core/DropdownToolbarButton';
 import { AspectRatio, IAspectRatio } from './core/AspectRatio';
 import { CropLayer, IRect } from './CropLayer';
 import { StraightenControl } from './core/StraightenControl';
+import { Renderer } from './core/Renderer';
 
 /**
  * Event handler type for {@linkcode MarkerArea} `render` event.
@@ -75,6 +76,7 @@ export class CropArea {
 
   private styleManager: StyleManager;
 
+  private cropLayerContainer: SVGGElement;
   private cropLayer: CropLayer;
 
   private cropRect: IRect;
@@ -206,6 +208,19 @@ export class CropArea {
   public renderImageQuality?: number;
 
   /**
+   * When set and {@linkcode renderAtNaturalSize} is `false` sets the width of the rendered image.
+   * 
+   * Both `renderWidth` and `renderHeight` have to be set for this to take effect.
+   */
+   public renderWidth?: number;
+   /**
+    * When set and {@linkcode renderAtNaturalSize} is `false` sets the height of the rendered image.
+    * 
+    * Both `renderWidth` and `renderHeight` have to be set for this to take effect.
+    */
+   public renderHeight?: number;
+ 
+  /**
    * Display mode.
    */
   public displayMode: DisplayMode = 'inline';
@@ -280,6 +295,8 @@ export class CropArea {
     this.flipHorizontallyButtonClicked = this.flipHorizontallyButtonClicked.bind(this);
     this.flipVerticallyButtonClicked = this.flipVerticallyButtonClicked.bind(this);
     this.applyFlip = this.applyFlip.bind(this);
+    this.renderClicked = this.renderClicked.bind(this);
+    this.render = this.render.bind(this);
   }
 
   private open(): void {
@@ -480,7 +497,14 @@ export class CropArea {
   }
 
   private setEditingTarget() {
-    SvgHelper.setAttributes(this.editingTarget, [['href', this.target.src]]);
+    const canvas = document.createElement("canvas");
+    canvas.width = this.target.naturalWidth;
+    canvas.height = this.target.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(this.target, 0, 0, this.target.naturalWidth, this.target.naturalHeight);
+    const imgDataURL = canvas.toDataURL();
+
+    SvgHelper.setAttributes(this.editingTarget, [['href', imgDataURL]]);
     this.setEditingTargetSize();
   }
 
@@ -523,7 +547,7 @@ export class CropArea {
     this.cropImage.appendChild(this.defs);
 
     this.editingTarget = SvgHelper.createImage([
-      ['href', this.target.src],
+      ['href', ''],
       [
         'transform-origin',
         `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
@@ -577,13 +601,13 @@ export class CropArea {
     };
 
     // crop layer
-    const cropLayerG = SvgHelper.createGroup();
-    this.cropImage.appendChild(cropLayerG);
+    this.cropLayerContainer = SvgHelper.createGroup();
+    this.cropImage.appendChild(this.cropLayerContainer);
     this.cropLayer = new CropLayer(
       this.imageWidth,
       this.imageHeight,
       this.CANVAS_MARGIN,
-      cropLayerG
+      this.cropLayerContainer
     );
     this.cropLayer.onCropChange = this.cropRectChanged;
     this.cropLayer.numberOfGridLines = this.gridLines;
@@ -909,7 +933,7 @@ export class CropArea {
     this.topToolbar.addButtonBlock(actionBlock);
 
     const okButton = new ToolbarButton(CheckIcon, 'OK');
-    okButton.onClick = this.closeUI;
+    okButton.onClick = this.renderClicked;
     actionBlock.addButton(okButton);
     const closeButton = new ToolbarButton(CloseIcon, 'Close');
     closeButton.onClick = this.closeUI;
@@ -1157,6 +1181,33 @@ export class CropArea {
     flip.setScale(this.flippedHorizontally ? -1 : 1, this.flippedVertically ? -1 : 1);
     this.editingTarget.transform.baseVal.replaceItem(flip, 0);
   }
+
+  private async renderClicked() {
+    const result = await this.render();
+    const state = this.getState();
+    this.renderEventListeners.forEach((listener) => listener(result, state));
+    this.close();
+  }
+
+  public async render(): Promise<string> {
+    const renderer = new Renderer();
+    renderer.naturalSize = this.renderAtNaturalSize;
+    renderer.imageType = this.renderImageType;
+    renderer.imageQuality = this.renderImageQuality;
+    renderer.width = this.renderWidth;
+    renderer.height = this.renderHeight;
+    
+    this.unzoomFromCrop();
+    SvgHelper.setAttributes(this.cropLayerContainer, [['display', 'none']]);
+
+    return await renderer.rasterize(this.cropImage, this.target, {
+      x: this.cropRect.x,
+      y: this.cropRect.y,
+      width: this.cropRect.width,
+      height: this.cropRect.height
+    }, this.CANVAS_MARGIN);
+  }
+
 
   private addStyles() {
     this.toolbarStyleClass = this.styleManager.addClass(
