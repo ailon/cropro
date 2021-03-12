@@ -6,7 +6,7 @@ export class Experiments {
     const ca = new CropArea(target);
     // ca.gridLines = 8;
     // ca.isGridVisible = false;
-    // ca.displayMode = 'popup';
+    ca.displayMode = 'popup';
 
     // ca.renderAtNaturalSize = true;
     // ca.renderWidth = 640;

@@ -209,17 +209,17 @@ export class CropArea {
 
   /**
    * When set and {@linkcode renderAtNaturalSize} is `false` sets the width of the rendered image.
-   * 
+   *
    * Both `renderWidth` and `renderHeight` have to be set for this to take effect.
    */
-   public renderWidth?: number;
-   /**
-    * When set and {@linkcode renderAtNaturalSize} is `false` sets the height of the rendered image.
-    * 
-    * Both `renderWidth` and `renderHeight` have to be set for this to take effect.
-    */
-   public renderHeight?: number;
- 
+  public renderWidth?: number;
+  /**
+   * When set and {@linkcode renderAtNaturalSize} is `false` sets the height of the rendered image.
+   *
+   * Both `renderWidth` and `renderHeight` have to be set for this to take effect.
+   */
+  public renderHeight?: number;
+
   /**
    * Display mode.
    */
@@ -292,11 +292,16 @@ export class CropArea {
     this.unzoomFromCrop = this.unzoomFromCrop.bind(this);
     this.rotateLeftButtonClicked = this.rotateLeftButtonClicked.bind(this);
     this.rotateRightButtonClicked = this.rotateRightButtonClicked.bind(this);
-    this.flipHorizontallyButtonClicked = this.flipHorizontallyButtonClicked.bind(this);
-    this.flipVerticallyButtonClicked = this.flipVerticallyButtonClicked.bind(this);
+    this.flipHorizontallyButtonClicked = this.flipHorizontallyButtonClicked.bind(
+      this
+    );
+    this.flipVerticallyButtonClicked = this.flipVerticallyButtonClicked.bind(
+      this
+    );
     this.applyFlip = this.applyFlip.bind(this);
     this.renderClicked = this.renderClicked.bind(this);
     this.render = this.render.bind(this);
+    this.onPopupResize = this.onPopupResize.bind(this);
   }
 
   private open(): void {
@@ -415,22 +420,25 @@ export class CropArea {
       });
       this.targetObserver.observe(this.target);
     } else if (this.displayMode === 'popup') {
-      this.targetObserver = new ResizeObserver(() => {
-        const ratio =
-          (1.0 * this.target.clientWidth) / this.target.clientHeight;
-        const newWidth =
-          this.editorCanvas.clientWidth / ratio > this.editorCanvas.clientHeight
-            ? this.editorCanvas.clientHeight * ratio
-            : this.editorCanvas.clientWidth;
-        const newHeight =
-          newWidth < this.editorCanvas.clientWidth
-            ? this.editorCanvas.clientHeight
-            : this.editorCanvas.clientWidth / ratio;
-        this.resize(newWidth, newHeight);
-      });
-      this.targetObserver.observe(this.editorCanvas);
+      this.targetObserver = new ResizeObserver(this.onPopupResize);
+      this.targetObserver.observe(this.contentDiv);
       window.addEventListener('resize', this.setWindowHeight);
     }
+  }
+
+  private onPopupResize() {
+    const ratio =
+      (1.0 * this.target.clientWidth) / this.target.clientHeight;
+    const newWidth =
+      this.contentDiv.clientWidth / ratio > this.contentDiv.clientHeight
+        ? (this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2) * ratio
+        : this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2;
+    const newHeight =
+      newWidth < this.contentDiv.clientWidth
+        ? this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2
+        : (this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2) / ratio + this.CANVAS_MARGIN * 2;
+
+    this.resize(newWidth, newHeight);
   }
 
   private setWindowHeight() {
@@ -488,6 +496,8 @@ export class CropArea {
       this.positionCropImage();
     }
 
+    this.cropLayer.scaleCanvas(this.imageWidth, this.imageHeight);
+
     // @todo
     // if (this.toolbar !== undefined) {
     //   this.toolbar.adjustLayout();
@@ -497,11 +507,17 @@ export class CropArea {
   }
 
   private setEditingTarget() {
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = this.target.naturalWidth;
     canvas.height = this.target.naturalHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(this.target, 0, 0, this.target.naturalWidth, this.target.naturalHeight);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(
+      this.target,
+      0,
+      0,
+      this.target.naturalWidth,
+      this.target.naturalHeight
+    );
     const imgDataURL = canvas.toDataURL();
 
     SvgHelper.setAttributes(this.editingTarget, [['href', imgDataURL]]);
@@ -537,7 +553,7 @@ export class CropArea {
     );
     this.cropImage.style.pointerEvents = 'auto';
 
-    this.cropImageHolder.style.position = 'absolute';
+    //this.cropImageHolder.style.position = 'absolute';
     this.cropImageHolder.style.width = `${this.paddedImageWidth}px`;
     this.cropImageHolder.style.height = `${this.paddedImageHeight}px`;
     this.cropImageHolder.style.transformOrigin = 'top left';
@@ -551,7 +567,7 @@ export class CropArea {
       [
         'transform-origin',
         `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
-      ]
+      ],
     ]);
     const flip = SvgHelper.createTransform();
     this.editingTarget.transform.baseVal.appendItem(flip);
@@ -834,13 +850,14 @@ export class CropArea {
     this.contentDiv.style.flexDirection = 'row';
     this.contentDiv.style.flexGrow = '2';
     this.contentDiv.style.flexShrink = '1';
+    this.contentDiv.style.overflow = 'hidden';
     // @todo
     // this.contentDiv.style.backgroundColor = this.uiStyleSettings.canvasBackgroundColor;
     this.contentDiv.style.backgroundColor = '#333333';
     if (this.displayMode === 'popup') {
-      this.contentDiv.style.maxHeight = `${
-        this.windowHeight - this.popupMargin * 2 - this.toolbarHeight * 3.5
-      }px`;
+      this.contentDiv.style.maxHeight = `calc(100vh - ${
+        this.popupMargin * 2 + this.toolbarHeight * 2
+      }px)`;
       // this.contentDiv.style.maxHeight = `calc(100vh - ${
       //   this.settings.popupMargin * 2 + this.uiStyleSettings.toolbarHeight * 3.5}px)`;
       this.contentDiv.style.maxWidth = `calc(100vw - ${
@@ -986,7 +1003,10 @@ export class CropArea {
     flipBlock.contentAlign = 'end';
     this.bottomToolbar.addButtonBlock(flipBlock);
 
-    const flipHorButton = new ToolbarButton(FlipHotizontalIcon, 'Flip horizontal');
+    const flipHorButton = new ToolbarButton(
+      FlipHotizontalIcon,
+      'Flip horizontal'
+    );
     flipHorButton.onClick = this.flipHorizontallyButtonClicked;
     flipBlock.addButton(flipHorButton);
 
@@ -1093,9 +1113,9 @@ export class CropArea {
         this.coverDiv.style.left = '0px';
         this.coverDiv.style.width = '100vw';
         this.coverDiv.style.height = `${this.windowHeight}px`;
-        this.contentDiv.style.maxHeight = `${
-          this.windowHeight - this.popupMargin * 2 - this.toolbarHeight * 3.5
-        }px`;
+        this.contentDiv.style.maxHeight = `calc(100vh - ${
+          this.popupMargin * 2 + this.toolbarHeight * 2
+        }px)`;
       }
     }
     this.positionCropImage();
@@ -1178,7 +1198,10 @@ export class CropArea {
 
   private applyFlip() {
     const flip = this.editingTarget.transform.baseVal.getItem(0);
-    flip.setScale(this.flippedHorizontally ? -1 : 1, this.flippedVertically ? -1 : 1);
+    flip.setScale(
+      this.flippedHorizontally ? -1 : 1,
+      this.flippedVertically ? -1 : 1
+    );
     this.editingTarget.transform.baseVal.replaceItem(flip, 0);
   }
 
@@ -1196,18 +1219,22 @@ export class CropArea {
     renderer.imageQuality = this.renderImageQuality;
     renderer.width = this.renderWidth;
     renderer.height = this.renderHeight;
-    
+
     this.unzoomFromCrop();
     SvgHelper.setAttributes(this.cropLayerContainer, [['display', 'none']]);
 
-    return await renderer.rasterize(this.cropImage, this.target, {
-      x: this.cropRect.x,
-      y: this.cropRect.y,
-      width: this.cropRect.width,
-      height: this.cropRect.height
-    }, this.CANVAS_MARGIN);
+    return await renderer.rasterize(
+      this.cropImage,
+      this.target,
+      {
+        x: this.cropRect.x,
+        y: this.cropRect.y,
+        width: this.cropRect.width,
+        height: this.cropRect.height,
+      },
+      this.CANVAS_MARGIN
+    );
   }
-
 
   private addStyles() {
     this.toolbarStyleClass = this.styleManager.addClass(
