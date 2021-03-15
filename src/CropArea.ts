@@ -2,7 +2,6 @@ import { Activator } from './core/Activator';
 import { SvgHelper } from './core/SvgHelper';
 import { CropAreaState } from './CropAreaState';
 
-import Logo from './assets/markerjs-logo-m.svg';
 import { IPoint } from './core/IPoint';
 import { StyleClass, StyleManager, StyleRule } from './core/Style';
 import { Toolbar } from './core/Toolbar';
@@ -18,6 +17,7 @@ import RotateLeftIcon from './assets/toolbar-icons/rotate-left.svg';
 import RotateRightIcon from './assets/toolbar-icons/rotate-right.svg';
 import FlipHotizontalIcon from './assets/toolbar-icons/flip-horizontal.svg';
 import FlipVerticalIcon from './assets/toolbar-icons/flip-vertical.svg';
+import LogoIcon from './assets/cropro-logo-white-square.svg';
 import { AspectRatioIconGenerator } from './core/AspectRatioIconGenerator';
 import { DropdownToolbarButton } from './core/DropdownToolbarButton';
 import { AspectRatio, IAspectRatio } from './core/AspectRatio';
@@ -314,14 +314,6 @@ export class CropArea {
     this.initCropLayer();
     this.attachEvents();
 
-    if (!Activator.isLicensed) {
-      // NOTE:
-      // before removing this call please consider supporting CROPRO
-      // by visiting https://markerjs.com/products/cropro for details
-      // thank you!
-      this.addLogo();
-    }
-
     this._isOpen = true;
   }
 
@@ -502,8 +494,6 @@ export class CropArea {
     // if (this.toolbar !== undefined) {
     //   this.toolbar.adjustLayout();
     // }
-
-    this.positionLogo();
   }
 
   private setEditingTarget() {
@@ -712,55 +702,6 @@ export class CropArea {
     window.addEventListener('resize', this.onWindowResize);
   }
 
-  /**
-   * NOTE:
-   *
-   * before removing or modifying this method please consider supporting CROPRO
-   * by visiting https://markerjs.com/products/cropro for details
-   *
-   * thank you!
-   */
-  private addLogo() {
-    this.logoUI = document.createElement('div');
-    this.logoUI.style.display = 'inline-block';
-    this.logoUI.style.margin = '0px';
-    this.logoUI.style.padding = '0px';
-    this.logoUI.style.fill = '#333333';
-
-    const link = document.createElement('a');
-    link.href = 'https://markerjs.com/products/cropro';
-    link.target = '_blank';
-    link.innerHTML = Logo;
-    link.title = 'Powered by CROPRO';
-
-    link.style.display = 'grid';
-    link.style.alignItems = 'center';
-    link.style.justifyItems = 'center';
-    link.style.padding = '3px';
-    link.style.width = '20px';
-    link.style.height = '20px';
-
-    this.logoUI.appendChild(link);
-
-    this.editorCanvas.appendChild(this.logoUI);
-
-    this.logoUI.style.position = 'absolute';
-    this.logoUI.style.pointerEvents = 'all';
-    this.positionLogo();
-  }
-
-  private positionLogo() {
-    if (this.logoUI) {
-      this.logoUI.style.left = `${this.cropImageHolder.offsetLeft + 10}px`;
-      this.logoUI.style.top = `${
-        this.cropImageHolder.offsetTop +
-        this.cropImageHolder.offsetHeight -
-        this.logoUI.clientHeight -
-        10
-      }px`;
-    }
-  }
-
   private overrideOverflow() {
     // backup current state of scrolling and overflow
     this.scrollXState = window.scrollX;
@@ -936,13 +877,28 @@ export class CropArea {
       (this.zoomToCropEnabled = !this.zoomToCropEnabled);
     cropBlock.addButton(zoomButton);
 
-    const logoBlock = new ToolbarElementBlock();
-    this.topToolbar.addElementBlock(logoBlock);
+    /**
+     * NOTE:
+     *
+     * before removing or modifying the code below please consider supporting CROPRO
+     * by visiting https://markerjs.com/products/cropro for details
+     *
+     * thank you!
+     */
+    if (!Activator.isLicensed) {
+      const logoBlock = new ToolbarElementBlock();
+      this.topToolbar.addElementBlock(logoBlock);
 
-    const logoText = document.createElement('div');
-    logoText.innerHTML = 'CROPRO';
-    logoText.style.color = 'white';
-    logoBlock.addElement(logoText);
+      //const logoButton = new ToolbarButton(LogoIcon, 'Powered by CROPRO');
+      const logoButton = document.createElement('div');
+      logoButton.className = `${this.topToolbar.buttonClassName} ${this.topToolbar.buttonColorsClassName}`;
+      const logoLink = document.createElement('a');
+      logoLink.href = 'https://markerjs.com/products/cropro';
+      logoLink.target = '_blank';
+      logoLink.innerHTML = LogoIcon;
+      logoButton.appendChild(logoLink)
+      logoBlock.addElement(logoButton);
+    }
 
     const actionBlock = new ToolbarButtonBlock();
     actionBlock.minWidth = `${this.toolbarHeight * 3}px`;
@@ -1119,7 +1075,6 @@ export class CropArea {
       }
     }
     this.positionCropImage();
-    this.positionLogo();
   }
 
   private rotateLeftButtonClicked() {
