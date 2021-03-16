@@ -59,4 +59,7 @@ export interface IStyleSettings {
   toolbarActiveButtonStyleColorsClassName?: string;
 
   toolbarStraightenerColorsClassName?: string;
+
+  toolbarOkButtonStyleColorsClassName?: string;
+  toolbarCloseButtonStyleColorsClassName?: string;
 }

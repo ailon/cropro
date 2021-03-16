@@ -52,6 +52,9 @@ export class Experiments {
     ca.styles.settings.toolbarButtonStyleColorsClassName = 'custom_toolbar button';
     ca.styles.settings.toolbarActiveButtonStyleColorsClassName = 'custom_toolbar button_active';
     ca.styles.settings.toolbarStraightenerColorsClassName = 'custom_toolbar straightener';
+    
+    ca.styles.settings.toolbarOkButtonStyleColorsClassName = 'custom_toolbar ok_button';
+    ca.styles.settings.toolbarCloseButtonStyleColorsClassName = 'custom_toolbar close_button';
 
     ca.styles.settings.cropShadeColor = 'pink';
     ca.styles.settings.cropFrameColor = 'yellow';

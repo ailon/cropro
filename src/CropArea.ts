@@ -929,9 +929,15 @@ export class CropArea {
     const okButton = new ToolbarButton(CheckIcon, 'OK');
     okButton.onClick = this.renderClicked;
     actionBlock.addButton(okButton);
+    if (this.styles.settings.toolbarOkButtonStyleColorsClassName) {
+      okButton.colorsClassName = this.styles.settings.toolbarOkButtonStyleColorsClassName;
+    }
     const closeButton = new ToolbarButton(CloseIcon, 'Close');
     closeButton.onClick = this.closeUI;
     actionBlock.addButton(closeButton);
+    if (this.styles.settings.toolbarCloseButtonStyleColorsClassName) {
+      closeButton.colorsClassName = this.styles.settings.toolbarCloseButtonStyleColorsClassName;
+    }
   }
 
   private addBottomToolbar() {
