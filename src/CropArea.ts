@@ -425,10 +425,9 @@ export class CropArea {
         ? (this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2) * ratio
         : this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2;
     const newHeight =
-      newWidth < this.contentDiv.clientWidth
+      (newWidth + this.CANVAS_MARGIN * 2) < this.contentDiv.clientWidth
         ? this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2
-        : (this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2) / ratio +
-          this.CANVAS_MARGIN * 2;
+        : (this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2) / ratio;
 
     this.resize(newWidth, newHeight);
   }
@@ -793,6 +792,7 @@ export class CropArea {
 
     this.contentDiv = document.createElement('div');
     this.contentDiv.style.display = 'flex';
+    this.contentDiv.style.alignItems = 'center';
     this.contentDiv.style.flexDirection = 'row';
     this.contentDiv.style.flexGrow = '2';
     this.contentDiv.style.flexShrink = '1';
