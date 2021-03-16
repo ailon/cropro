@@ -14,6 +14,9 @@ export interface IStyleSettings {
    * Background color of toolbar buttons on hover.
    */
   toolbarBackgroundHoverColor?: string;
+
+  toolbarBackgroundActiveColor?: string;
+
   /**
    * Foreground color of toolbar icons.
    */
@@ -47,4 +50,6 @@ export interface IStyleSettings {
    * _Note_: should only be used for colors and similar styles. Changing layout-related styles here can break the UI.
    */
   toolbarActiveButtonStyleColorsClassName?: string;
+
+  toolbarStraightenerColorsClassName?: string;
 }

@@ -48,6 +48,11 @@ export class Experiments {
     // ca.isGridVisible = false;
     // ca.displayMode = 'popup';
 
+    ca.styles.settings.toolbarStyleColorsClassName = 'custom_toolbar background';
+    ca.styles.settings.toolbarButtonStyleColorsClassName = 'custom_toolbar button';
+    ca.styles.settings.toolbarActiveButtonStyleColorsClassName = 'custom_toolbar button_active';
+    ca.styles.settings.toolbarStraightenerColorsClassName = 'custom_toolbar straightener';
+
     ca.renderAtNaturalSize = true;
     // ca.renderWidth = 640;
     // ca.renderHeight = 480;

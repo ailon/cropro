@@ -13,11 +13,13 @@ export class Toolbar {
 
   public buttonClassName: string;
   public buttonColorsClassName: string;
+  public buttonActiveColorsClassName: string;
 
   public addButtonBlock(block: ToolbarButtonBlock): void {
     block.className = this.blockClassName;
     block.buttonClassName = this.buttonClassName;
     block.buttonColorsClassName = this.buttonColorsClassName;
+    block.buttonActiveColorsClassName = this.buttonActiveColorsClassName;
     this.blocks.push(block);
   }
 

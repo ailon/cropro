@@ -19,9 +19,19 @@ export class ToolbarButton {
 
   protected uiContainer: HTMLDivElement;
   protected buttonContainer: HTMLDivElement;
+
+  private _isActive = false;
+  public get isActive(): boolean {
+    return this._isActive;
+  }
+  public set isActive(value: boolean) {
+    this._isActive = value;
+    this.adjustClassName();
+  }
   
   public className: string;
   public colorsClassName: string;
+  public activeColorsClassName: string;
 
   constructor(
     icon: string,
@@ -30,12 +40,15 @@ export class ToolbarButton {
     this._icon = icon;
     this.title = title;
     this.uiContainer = document.createElement('div');
+
+    this.adjustClassName = this.adjustClassName.bind(this);
   }
 
   public getUI(): HTMLElement {
     this.buttonContainer = document.createElement('div');
     this.buttonContainer.title = this.title;
     this.buttonContainer.className = `${this.className} ${this.colorsClassName}`;
+    this.adjustClassName();
     this.buttonContainer.innerHTML = this._icon;
     if (this.onClick) {
       this.buttonContainer.addEventListener('click', () => this.onClick());
@@ -44,5 +57,15 @@ export class ToolbarButton {
     this.uiContainer.style.display = 'inline-block';
 
     return this.uiContainer;
+  }
+
+  private adjustClassName() {
+    if (this.activeColorsClassName) {
+      if (this._isActive && this.buttonContainer.className.indexOf(this.activeColorsClassName) < 0) {
+        this.buttonContainer.className += ` ${this.activeColorsClassName}`;
+      } else if (!this._isActive) {
+        this.buttonContainer.className = this.buttonContainer.className.replace(this.activeColorsClassName, '');
+      }
+    }
   }
 }

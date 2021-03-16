@@ -5,7 +5,7 @@ import { IStyleSettings } from './IStyleSettings';
  */
 export class StyleManager {
 
-  private _classNamePrefix = '__markerjs2_';
+  private _classNamePrefix = '__cropro_';
   /**
    * Prefix used for all internally created CSS classes.
    */
@@ -32,6 +32,7 @@ export class StyleManager {
       canvasBackgroundColor: '#ffffff',
       toolbarBackgroundColor: '#111111',
       toolbarBackgroundHoverColor: '#333333',
+      toolbarBackgroundActiveColor: '#282828',
       toolbarColor: '#eeeeee',
       toolbarHeight: 40
     }

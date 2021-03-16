@@ -6,10 +6,12 @@ export class ToolbarButtonBlock extends ToolbarBlock {
 
   public buttonClassName: string;
   public buttonColorsClassName: string;
+  public buttonActiveColorsClassName: string;
 
   public addButton(button: ToolbarButton): void {
     button.className = this.buttonClassName;
     button.colorsClassName = this.buttonColorsClassName;
+    button.activeColorsClassName = this.buttonActiveColorsClassName;
     this.buttons.push(button);
   }
 

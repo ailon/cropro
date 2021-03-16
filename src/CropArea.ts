@@ -74,7 +74,7 @@ export class CropArea {
     return this._instanceNo;
   }
 
-  private styleManager: StyleManager;
+  public styles: StyleManager;
 
   private cropLayerContainer: SVGGElement;
   private cropLayer: CropLayer;
@@ -264,7 +264,7 @@ export class CropArea {
   constructor(target: HTMLImageElement) {
     this._instanceNo = CropArea.instanceCounter++;
 
-    this.styleManager = new StyleManager(this.instanceNo);
+    this.styles = new StyleManager(this.instanceNo);
 
     this.target = target;
     this.targetRoot = document.body;
@@ -419,8 +419,7 @@ export class CropArea {
   }
 
   private onPopupResize() {
-    const ratio =
-      (1.0 * this.target.clientWidth) / this.target.clientHeight;
+    const ratio = (1.0 * this.target.clientWidth) / this.target.clientHeight;
     const newWidth =
       this.contentDiv.clientWidth / ratio > this.contentDiv.clientHeight
         ? (this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2) * ratio
@@ -428,7 +427,8 @@ export class CropArea {
     const newHeight =
       newWidth < this.contentDiv.clientWidth
         ? this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2
-        : (this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2) / ratio + this.CANVAS_MARGIN * 2;
+        : (this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2) / ratio +
+          this.CANVAS_MARGIN * 2;
 
     this.resize(newWidth, newHeight);
   }
@@ -726,7 +726,7 @@ export class CropArea {
 
     this.coverDiv = document.createElement('div');
 
-    this.coverDiv.className = this.styleManager.classNamePrefix;
+    this.coverDiv.className = this.styles.classNamePrefix;
 
     // hardcode font size so nothing inside is affected by higher up settings
     this.coverDiv.style.fontSize = '16px';
@@ -836,13 +836,23 @@ export class CropArea {
   private addTopToolbar() {
     this.topToolbar = new Toolbar();
     this.topToolbar.className = this.toolbarStyleClass.name;
-    this.topToolbar.colorsClassName = this.toolbarStyleColorsClass.name;
-    this.topToolbar.fadeInClassName = this.styleManager.fadeInAnimationClassName;
+    this.topToolbar.colorsClassName = this.styles.settings
+      .toolbarStyleColorsClassName
+      ? this.styles.settings.toolbarStyleColorsClassName
+      : this.toolbarStyleColorsClass.name;
+    this.topToolbar.fadeInClassName = this.styles.fadeInAnimationClassName;
 
     this.topToolbar.blockClassName = this.toolbarBlockStyleClass.name;
 
     this.topToolbar.buttonClassName = this.toolbarButtonStyleClass.name;
-    this.topToolbar.buttonColorsClassName = this.toolbarButtonStyleColorsClass.name;
+    this.topToolbar.buttonColorsClassName = this.styles.settings
+      .toolbarButtonStyleColorsClassName
+      ? this.styles.settings.toolbarButtonStyleColorsClassName
+      : this.toolbarButtonStyleColorsClass.name;
+    this.topToolbar.buttonActiveColorsClassName = this.styles.settings
+      .toolbarActiveButtonStyleColorsClassName
+      ? this.styles.settings.toolbarActiveButtonStyleColorsClassName
+      : this.toolbarActiveButtonStyleColorsClass.name;
 
     const cropBlock = new ToolbarButtonBlock();
     cropBlock.minWidth = `${this.toolbarHeight * 3}px`;
@@ -870,11 +880,19 @@ export class CropArea {
     cropBlock.addButton(this.aspectRatioButton);
 
     const gridButton = new ToolbarButton(GridIcon, 'Toggle grid');
-    gridButton.onClick = () => (this.isGridVisible = !this.isGridVisible);
+    gridButton.isActive = this.isGridVisible;
+    gridButton.onClick = () => {
+      this.isGridVisible = !this.isGridVisible;
+      gridButton.isActive = this.isGridVisible;
+    };
     cropBlock.addButton(gridButton);
+
     const zoomButton = new ToolbarButton(ZoomIcon, 'Zoom to selection');
-    zoomButton.onClick = () =>
-      (this.zoomToCropEnabled = !this.zoomToCropEnabled);
+    zoomButton.isActive = this.zoomToCropEnabled;
+    zoomButton.onClick = () => {
+      this.zoomToCropEnabled = !this.zoomToCropEnabled;
+      zoomButton.isActive = this.zoomToCropEnabled;
+    };
     cropBlock.addButton(zoomButton);
 
     /**
@@ -896,7 +914,7 @@ export class CropArea {
       logoLink.href = 'https://markerjs.com/products/cropro';
       logoLink.target = '_blank';
       logoLink.innerHTML = LogoIcon;
-      logoButton.appendChild(logoLink)
+      logoButton.appendChild(logoLink);
       logoBlock.addElement(logoButton);
     }
 
@@ -916,13 +934,23 @@ export class CropArea {
   private addBottomToolbar() {
     this.bottomToolbar = new Toolbar();
     this.bottomToolbar.className = this.toolbarStyleClass.name;
-    this.bottomToolbar.colorsClassName = this.toolbarStyleColorsClass.name;
-    this.bottomToolbar.fadeInClassName = this.styleManager.fadeInAnimationClassName;
+    this.bottomToolbar.colorsClassName = this.styles.settings
+      .toolbarStyleColorsClassName
+      ? this.styles.settings.toolbarStyleColorsClassName
+      : this.toolbarStyleColorsClass.name;
+    this.bottomToolbar.fadeInClassName = this.styles.fadeInAnimationClassName;
 
     this.bottomToolbar.blockClassName = this.toolbarBlockStyleClass.name;
 
     this.bottomToolbar.buttonClassName = this.toolbarButtonStyleClass.name;
-    this.bottomToolbar.buttonColorsClassName = this.toolbarButtonStyleColorsClass.name;
+    this.bottomToolbar.buttonColorsClassName = this.styles.settings
+      .toolbarButtonStyleColorsClassName
+      ? this.styles.settings.toolbarButtonStyleColorsClassName
+      : this.toolbarButtonStyleColorsClass.name;
+    this.bottomToolbar.buttonActiveColorsClassName = this.styles.settings
+      .toolbarActiveButtonStyleColorsClassName
+      ? this.styles.settings.toolbarActiveButtonStyleColorsClassName
+      : this.toolbarActiveButtonStyleColorsClass.name;
 
     const rotateBlock = new ToolbarButtonBlock();
     rotateBlock.minWidth = `${this.toolbarHeight * 2}px`;
@@ -942,12 +970,12 @@ export class CropArea {
     straightenBlock.className = this.toolbarStraightenerBlockStyleClass.name;
     this.bottomToolbar.addElementBlock(straightenBlock);
 
-    // const tempStraightener = document.createElement('div');
-    // tempStraightener.innerHTML = '-------';
-    // tempStraightener.style.color = 'white';
     this.straightener = new StraightenControl('Straighten');
     this.straightener.className = this.toolbarStraightenerStyleClass.name;
-    this.straightener.colorsClassName = this.toolbarStraightenerStyleColorsClass.name;
+    this.straightener.colorsClassName = this.styles.settings
+      .toolbarStraightenerColorsClassName
+      ? this.styles.settings.toolbarStraightenerColorsClassName
+      : this.toolbarStraightenerStyleColorsClass.name;
     this.straightener.onAngleChange = (delta: number) => {
       this.rotateBy(delta);
       this.straightener.angle = this.rotationAngle;
@@ -1192,7 +1220,7 @@ export class CropArea {
   }
 
   private addStyles() {
-    this.toolbarStyleClass = this.styleManager.addClass(
+    this.toolbarStyleClass = this.styles.addClass(
       new StyleClass(
         'toolbar',
         `
@@ -1208,16 +1236,16 @@ export class CropArea {
       )
     );
 
-    this.toolbarStyleColorsClass = this.styleManager.addClass(
+    this.toolbarStyleColorsClass = this.styles.addClass(
       new StyleClass(
         'toolbar_colors',
         `
-      background-color: ${this.styleManager.settings.toolbarBackgroundColor};
+      background-color: ${this.styles.settings.toolbarBackgroundColor};
     `
       )
     );
 
-    this.toolbarBlockStyleClass = this.styleManager.addClass(
+    this.toolbarBlockStyleClass = this.styles.addClass(
       new StyleClass(
         'toolbar-block',
         `
@@ -1229,7 +1257,7 @@ export class CropArea {
     );
 
     const buttonPadding = this.toolbarHeight / 4;
-    this.toolbarButtonStyleClass = this.styleManager.addClass(
+    this.toolbarButtonStyleClass = this.styles.addClass(
       new StyleClass(
         'toolbar_button',
         `
@@ -1243,26 +1271,26 @@ export class CropArea {
     `
       )
     );
-    this.toolbarButtonStyleColorsClass = this.styleManager.addClass(
+    this.toolbarButtonStyleColorsClass = this.styles.addClass(
       new StyleClass(
         'toolbar_button_colors',
         `
-      fill: ${this.styleManager.settings.toolbarColor};
+      fill: ${this.styles.settings.toolbarColor};
     `
       )
     );
 
-    this.toolbarActiveButtonStyleColorsClass = this.styleManager.addClass(
+    this.toolbarActiveButtonStyleColorsClass = this.styles.addClass(
       new StyleClass(
         'toolbar_active_button',
         `
-      fill: ${this.styleManager.settings.toolbarColor};
-      background-color: ${this.styleManager.settings.toolbarBackgroundHoverColor}
+      fill: ${this.styles.settings.toolbarColor};
+      background-color: ${this.styles.settings.toolbarBackgroundActiveColor}
     `
       )
     );
 
-    this.styleManager.addRule(
+    this.styles.addRule(
       new StyleRule(
         `.${this.toolbarButtonStyleClass.name} svg`,
         `
@@ -1271,22 +1299,22 @@ export class CropArea {
       )
     );
 
-    this.styleManager.addRule(
+    this.styles.addRule(
       new StyleRule(
         `.${this.toolbarButtonStyleColorsClass.name}:hover`,
         `
-        background-color: ${this.styleManager.settings.toolbarBackgroundHoverColor}
+        background-color: ${this.styles.settings.toolbarBackgroundHoverColor}
     `
       )
     );
 
-    this.toolbarDropdownStyleClass = this.styleManager.addClass(
+    this.toolbarDropdownStyleClass = this.styles.addClass(
       new StyleClass(
         'toolbar_dropdown',
         `
       position: absolute;
       width: ${this.toolbarHeight * 4}px;
-      background-color: ${this.styleManager.settings.toolbarBackgroundColor};
+      background-color: ${this.styles.settings.toolbarBackgroundColor};
       z-index: 20;
       white-space: normal;
       box-sizing: content-box;
@@ -1295,7 +1323,7 @@ export class CropArea {
       )
     );
 
-    this.toolbarStraightenerBlockStyleClass = this.styleManager.addClass(
+    this.toolbarStraightenerBlockStyleClass = this.styles.addClass(
       new StyleClass(
         'toolbar_straightener_block',
         `
@@ -1306,7 +1334,7 @@ export class CropArea {
     `
       )
     );
-    this.toolbarStraightenerStyleClass = this.styleManager.addClass(
+    this.toolbarStraightenerStyleClass = this.styles.addClass(
       new StyleClass(
         'toolbar_straightener',
         `
@@ -1321,11 +1349,11 @@ export class CropArea {
     `
       )
     );
-    this.toolbarStraightenerStyleColorsClass = this.styleManager.addClass(
+    this.toolbarStraightenerStyleColorsClass = this.styles.addClass(
       new StyleClass(
         'toolbar_straightener_colors',
         `
-      fill: ${this.styleManager.settings.toolbarColor};
+      fill: ${this.styles.settings.toolbarColor};
     `
       )
     );
