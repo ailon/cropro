@@ -487,7 +487,7 @@ export class CropArea {
       this.setTopLeft();
       this.positionCropImage();
     }
-
+    
     this.cropLayer.scaleCanvas(this.imageWidth, this.imageHeight);
 
     // @todo

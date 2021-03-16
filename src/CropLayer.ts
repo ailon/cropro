@@ -469,11 +469,16 @@ export class CropLayer {
     this.canvasWidth = newCanvasWidth;
     this.canvasHeight = newCanvasHeight;
 
-    this.setCropRectangle({
-      x: this.cropRect.x * xScale,
-      y: this.cropRect.y * yScale,
+    const newRect = {
+      x: (this.cropRect.x - this.margin) * xScale + this.margin,
+      y: (this.cropRect.y - this.margin) * yScale + this.margin,
       width: this.cropRect.width * xScale,
       height: this.cropRect.height * yScale
-    });
+    };
+    if (this.onCropChange) {
+      this.onCropChange(newRect);
+    }
+    this.setCropRectangle(newRect);
+
   }
 }
