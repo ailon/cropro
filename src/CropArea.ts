@@ -1233,7 +1233,7 @@ export class CropArea {
       new StyleClass(
         'toolbar',
         `
-      width: 100%;
+      width: ${this.displayMode === 'inline' ? '100%' : 'calc(100vw - ' + this.popupMargin * 2 + 'px)'};
       flex-shrink: 0;
       display: flex;
       flex-direction: row;
