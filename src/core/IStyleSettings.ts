@@ -21,6 +21,13 @@ export interface IStyleSettings {
    * Foreground color of toolbar icons.
    */
   toolbarColor?: string;
+
+  cropShadeColor?: string;
+  cropFrameColor?: string;
+  gripColor?: string;
+  gripFillColor?: string;
+
+
   /**
    * Base height of the toolbar block in pixels.
    */

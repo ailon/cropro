@@ -46,12 +46,21 @@ export class Experiments {
     const ca = new CropArea(target);
     ca.gridLines = 8;
     // ca.isGridVisible = false;
-    // ca.displayMode = 'popup';
+    ca.displayMode = 'popup';
 
     ca.styles.settings.toolbarStyleColorsClassName = 'custom_toolbar background';
     ca.styles.settings.toolbarButtonStyleColorsClassName = 'custom_toolbar button';
     ca.styles.settings.toolbarActiveButtonStyleColorsClassName = 'custom_toolbar button_active';
     ca.styles.settings.toolbarStraightenerColorsClassName = 'custom_toolbar straightener';
+
+    ca.styles.settings.cropShadeColor = 'pink';
+    ca.styles.settings.cropFrameColor = 'yellow';
+    ca.styles.settings.gripColor = 'red';
+    ca.styles.settings.gripFillColor = 'blue';
+    
+    ca.styles.settings.canvasBackgroundColor = 'magenta';
+
+
 
     ca.renderAtNaturalSize = true;
     // ca.renderWidth = 640;

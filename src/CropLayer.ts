@@ -80,6 +80,11 @@ export class CropLayer {
 
   public onCropChange: CropChangeHandler;
 
+  public cropShadeColor: string;
+  public cropFrameColor: string;
+  public gripColor: string;
+  public gripFillColor: string;
+
   constructor(
     canvasWidth: number,
     canvasHeight: number,
@@ -102,7 +107,7 @@ export class CropLayer {
 
   public open(): void {
     this.cropShadeElement = SvgHelper.createPath('M0,0Z', [
-      ['fill', '#ffffff'],
+      ['fill', this.cropShadeColor],
       ['fill-opacity', '0.8'],
     ]);
     this.container.appendChild(this.cropShadeElement);
@@ -115,7 +120,7 @@ export class CropLayer {
     for (let i = 0; i < this.numberOfGridLines; i++) {
       this.horizontalGridLines.push(
         SvgHelper.createLine(0, 0, 0, 0, [
-          ['stroke', '#ffffff'],
+          ['stroke', this.cropFrameColor],
           ['stroke-width', '1'],
           ['stroke-dasharray', '3 1'],
           ['opacity', '0.7'],
@@ -123,7 +128,7 @@ export class CropLayer {
       );
       this.verticalGridLines.push(
         SvgHelper.createLine(0, 0, 0, 0, [
-          ['stroke', '#ffffff'],
+          ['stroke', this.cropFrameColor],
           ['stroke-width', '1'],
           ['stroke-dasharray', '3 1'],
           ['opacity', '0.7'],
@@ -138,19 +143,19 @@ export class CropLayer {
     );
 
     this.cropRectElement = SvgHelper.createRect(0, 0, [
-      ['stroke', '#ffffff'],
+      ['stroke', this.cropFrameColor],
       ['stroke-width', '3'],
       ['fill', 'transparent'],
     ]);
     this.container.appendChild(this.cropRectElement);
 
-    this.topLeftGrip = new ResizeGrip();
+    this.topLeftGrip = new ResizeGrip(this.gripColor, this.gripFillColor);
     this.container.appendChild(this.topLeftGrip.visual);
-    this.topRightGrip = new ResizeGrip();
+    this.topRightGrip = new ResizeGrip(this.gripColor, this.gripFillColor);
     this.container.appendChild(this.topRightGrip.visual);
-    this.bottomLeftGrip = new ResizeGrip();
+    this.bottomLeftGrip = new ResizeGrip(this.gripColor, this.gripFillColor);
     this.container.appendChild(this.bottomLeftGrip.visual);
-    this.bottomRightGrip = new ResizeGrip();
+    this.bottomRightGrip = new ResizeGrip(this.gripColor, this.gripFillColor);
     this.container.appendChild(this.bottomRightGrip.visual);
 
     this.attachEvents();

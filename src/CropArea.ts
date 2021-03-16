@@ -618,6 +618,11 @@ export class CropArea {
     this.cropLayer.onCropChange = this.cropRectChanged;
     this.cropLayer.numberOfGridLines = this.gridLines;
     this.cropLayer.isGridVisible = this.isGridVisible;
+    this.cropLayer.cropShadeColor = this.styles.settings.cropShadeColor;
+    this.cropLayer.cropFrameColor = this.styles.settings.cropFrameColor;
+    this.cropLayer.gripColor = this.styles.settings.gripColor;
+    this.cropLayer.gripFillColor = this.styles.settings.gripFillColor;
+
     this.cropLayer.open();
     this.cropLayer.setCropRectangle(this.cropRect);
     if (this.zoomToCropEnabled) {
@@ -792,9 +797,7 @@ export class CropArea {
     this.contentDiv.style.flexGrow = '2';
     this.contentDiv.style.flexShrink = '1';
     this.contentDiv.style.overflow = 'hidden';
-    // @todo
-    // this.contentDiv.style.backgroundColor = this.uiStyleSettings.canvasBackgroundColor;
-    this.contentDiv.style.backgroundColor = '#333333';
+    this.contentDiv.style.backgroundColor = this.styles.settings.canvasBackgroundColor;
     if (this.displayMode === 'popup') {
       this.contentDiv.style.maxHeight = `calc(100vh - ${
         this.popupMargin * 2 + this.toolbarHeight * 2

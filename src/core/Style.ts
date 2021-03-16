@@ -29,11 +29,15 @@ export class StyleManager {
    */
   public get defaultSettings(): IStyleSettings {
     return {
-      canvasBackgroundColor: '#ffffff',
+      canvasBackgroundColor: '#333333',
       toolbarBackgroundColor: '#111111',
       toolbarBackgroundHoverColor: '#333333',
       toolbarBackgroundActiveColor: '#282828',
       toolbarColor: '#eeeeee',
+      cropShadeColor: '#ffffff',
+      cropFrameColor: '#ffffff',
+      gripColor: '#333333',
+      gripFillColor: '#cccccc',
       toolbarHeight: 40
     }
   }

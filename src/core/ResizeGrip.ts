@@ -14,19 +14,24 @@ export class ResizeGrip {
    */
   public readonly GRIP_SIZE = 10;
 
+  private color;
+  private fillColor;
+
   /**
    * Creates a new grip.
    */
-  constructor() {
+  constructor(color: string, fillColor: string) {
+    this.color = color;
+    this.fillColor = fillColor;
     this.visual = SvgHelper.createGroup();
     this.visual.appendChild(
       SvgHelper.createCircle(this.GRIP_SIZE * 1.5, [['fill', 'transparent']])
     );
     this.visual.appendChild(
       SvgHelper.createCircle(this.GRIP_SIZE, [
-        ['fill', '#cccccc'],
-        ['fill-opacity', '0.7'],
-        ['stroke', '#333333'],
+        ['fill', this.fillColor],
+        ['fill-opacity', '0.9'],
+        ['stroke', this.color],
         ['stroke-width', '2'],
         ['stroke-opacity', '0.7']
       ])
