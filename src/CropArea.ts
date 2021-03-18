@@ -425,7 +425,7 @@ export class CropArea {
         ? (this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2) * ratio
         : this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2;
     const newHeight =
-      (newWidth + this.CANVAS_MARGIN * 2) < this.contentDiv.clientWidth
+      newWidth + this.CANVAS_MARGIN * 2 < this.contentDiv.clientWidth
         ? this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2
         : (this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2) / ratio;
 
@@ -486,7 +486,7 @@ export class CropArea {
       this.setTopLeft();
       this.positionCropImage();
     }
-    
+
     this.cropLayer.scaleCanvas(this.imageWidth, this.imageHeight);
 
     // @todo
@@ -1051,6 +1051,10 @@ export class CropArea {
     const result: CropAreaState = {
       width: this.imageWidth,
       height: this.imageHeight,
+      rotationAngle: this.rotationAngle,
+      flippedHorizontally: this.flippedHorizontally,
+      flippedVertically: this.flippedVertically,
+      cropRect: Object.assign({}, this.cropRect),
     };
     return result;
   }
@@ -1070,11 +1074,22 @@ export class CropArea {
    * @param state - previously saved state object.
    */
   public restoreState(state: CropAreaState): void {
-    if (
-      state.width &&
-      state.height &&
-      (state.width !== this.imageWidth || state.height !== this.imageHeight)
-    ) {
+    if (state) {
+      const newRect = this.cropLayer.getRescaledRect(
+        state.width,
+        state.height,
+        this.imageWidth,
+        this.imageHeight,
+        state.cropRect,
+        this.CANVAS_MARGIN
+      );
+      this.cropLayer.setCropRectangle(newRect);
+      this.cropRectChanged(newRect);
+      this.flippedHorizontally = state.flippedHorizontally;
+      this.flippedVertically = state.flippedVertically;
+      this.applyFlip();
+      this.rotationAngle = state.rotationAngle;
+      this.applyRotation();
       // @todo
       // this.scaleMarkers(this.imageWidth / state.width, this.imageHeight / state.height);
     }
@@ -1233,7 +1248,11 @@ export class CropArea {
       new StyleClass(
         'toolbar',
         `
-      width: ${this.displayMode === 'inline' ? '100%' : 'calc(100vw - ' + this.popupMargin * 2 + 'px)'};
+      width: ${
+        this.displayMode === 'inline'
+          ? '100%'
+          : 'calc(100vw - ' + this.popupMargin * 2 + 'px)'
+      };
       flex-shrink: 0;
       display: flex;
       flex-direction: row;

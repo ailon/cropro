@@ -2,6 +2,7 @@ import { CropArea } from '../../src';
 import { CropAreaState } from '../../src/CropAreaState';
 
 export class Experiments {
+  savedState: CropAreaState;
   public showCropArea1(target: HTMLImageElement): void {
     const ca = new CropArea(target);
     // ca.gridLines = 8;
@@ -38,8 +39,12 @@ export class Experiments {
       const res = document.createElement('img');
       res.src = dataUrl;
       document.body.appendChild(res);
+      this.savedState = state;
     })
     ca.show();
+    if (this.savedState) {
+      ca.restoreState(this.savedState);
+    }
   }
 
   public showCropArea3(target: HTMLImageElement): void {

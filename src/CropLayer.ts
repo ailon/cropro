@@ -103,6 +103,7 @@ export class CropLayer {
     this.resize = this.resize.bind(this);
     this.adjustCropRect = this.adjustCropRect.bind(this);
     this.scaleCanvas = this.scaleCanvas.bind(this);
+    this.getRescaledRect = this.getRescaledRect.bind(this);
   }
 
   public open(): void {
@@ -463,22 +464,41 @@ export class CropLayer {
     }
   }
 
+  public getRescaledRect(
+    oldCanvasWidth: number,
+    oldCanvasHeight: number,
+    newCanvasWidth: number,
+    newCanvasHeight: number,
+    oldRect: IRect,
+    margin: number
+  ): IRect {
+    const xScale = newCanvasWidth / oldCanvasWidth;
+    const yScale = newCanvasHeight / oldCanvasHeight;
+
+    const newRect = {
+      x: (oldRect.x - margin) * xScale + margin,
+      y: (oldRect.y - margin) * yScale + margin,
+      width: oldRect.width * xScale,
+      height: oldRect.height * yScale,
+    };
+    return newRect;
+  }
+
   public scaleCanvas(newCanvasWidth: number, newCanvasHeight: number): void {
-    const xScale = newCanvasWidth / this.canvasWidth;
-    const yScale = newCanvasHeight / this.canvasHeight;
+    const newRect = this.getRescaledRect(
+      this.canvasWidth,
+      this.canvasHeight,
+      newCanvasWidth,
+      newCanvasHeight,
+      this.cropRect,
+      this.margin
+    );
     this.canvasWidth = newCanvasWidth;
     this.canvasHeight = newCanvasHeight;
 
-    const newRect = {
-      x: (this.cropRect.x - this.margin) * xScale + this.margin,
-      y: (this.cropRect.y - this.margin) * yScale + this.margin,
-      width: this.cropRect.width * xScale,
-      height: this.cropRect.height * yScale
-    };
     if (this.onCropChange) {
       this.onCropChange(newRect);
     }
     this.setCropRectangle(newRect);
-
   }
 }
