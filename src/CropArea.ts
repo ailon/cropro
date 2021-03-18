@@ -599,10 +599,10 @@ export class CropArea {
 
   private initCropLayer() {
     this.cropRect = {
-      x: 80 + this.CANVAS_MARGIN,
-      y: 80 + this.CANVAS_MARGIN,
-      width: this.imageWidth - 260,
-      height: this.imageHeight - 260,
+      x: this.CANVAS_MARGIN,
+      y: this.CANVAS_MARGIN,
+      width: this.imageWidth,
+      height: this.imageHeight,
     };
 
     // crop layer
