@@ -62,4 +62,14 @@ export interface IStyleSettings {
 
   toolbarOkButtonStyleColorsClassName?: string;
   toolbarCloseButtonStyleColorsClassName?: string;
+
+  /**
+   * If set to true, the top toolbar is hidden.
+   */
+  hideTopToolbar?: boolean;
+  /**
+   * If set to true, the bottom toolbar is hidden.
+   */
+  hideBottomToolbar?: boolean;
+
 }

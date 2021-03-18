@@ -299,7 +299,7 @@ export class CropArea {
       this
     );
     this.applyFlip = this.applyFlip.bind(this);
-    this.renderClicked = this.renderClicked.bind(this);
+    this.startRenderAndClose = this.startRenderAndClose.bind(this);
     this.render = this.render.bind(this);
     this.onPopupResize = this.onPopupResize.bind(this);
     this.applyAspectRatio = this.applyAspectRatio.bind(this);
@@ -840,6 +840,7 @@ export class CropArea {
 
   private addTopToolbar() {
     this.topToolbar = new Toolbar();
+    this.topToolbar.visibility = this.styles.settings.hideTopToolbar ? 'hidden' : 'visible';
     this.topToolbar.className = this.toolbarStyleClass.name;
     this.topToolbar.colorsClassName = this.styles.settings
       .toolbarStyleColorsClassName
@@ -933,7 +934,7 @@ export class CropArea {
     this.topToolbar.addButtonBlock(actionBlock);
 
     const okButton = new ToolbarButton(CheckIcon, 'OK');
-    okButton.onClick = this.renderClicked;
+    okButton.onClick = this.startRenderAndClose;
     actionBlock.addButton(okButton);
     if (this.styles.settings.toolbarOkButtonStyleColorsClassName) {
       okButton.colorsClassName = this.styles.settings.toolbarOkButtonStyleColorsClassName;
@@ -948,6 +949,7 @@ export class CropArea {
 
   private addBottomToolbar() {
     this.bottomToolbar = new Toolbar();
+    this.bottomToolbar.visibility = this.styles.settings.hideBottomToolbar ? 'hidden' : 'visible';    
     this.bottomToolbar.className = this.toolbarStyleClass.name;
     this.bottomToolbar.colorsClassName = this.styles.settings
       .toolbarStyleColorsClassName
@@ -1222,14 +1224,14 @@ export class CropArea {
     this.editingTarget.transform.baseVal.replaceItem(flip, 0);
   }
 
-  private async renderClicked() {
+  public async startRenderAndClose(): Promise<void> {
     const result = await this.render();
     const state = this.getState();
     this.renderEventListeners.forEach((listener) => listener(result, state));
     this.close();
   }
 
-  public async render(): Promise<string> {
+  private async render(): Promise<string> {
     const renderer = new Renderer();
     renderer.naturalSize = this.renderAtNaturalSize;
     renderer.imageType = this.renderImageType;

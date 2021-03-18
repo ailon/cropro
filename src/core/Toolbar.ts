@@ -14,6 +14,8 @@ export class Toolbar {
   public buttonClassName: string;
   public buttonColorsClassName: string;
   public buttonActiveColorsClassName: string;
+  
+  public visibility = 'visible';
 
   public addButtonBlock(block: ToolbarButtonBlock): void {
     block.className = this.blockClassName;
@@ -33,6 +35,7 @@ export class Toolbar {
   public getUI(): HTMLElement {
     const uiContainer = document.createElement('div');
     uiContainer.className = `${this.className} ${this.colorsClassName} ${this.fadeInClassName}`;
+    uiContainer.style.visibility = this.visibility;
 
     this.blocks.forEach((block) => uiContainer.appendChild(block.getUI()));
 
