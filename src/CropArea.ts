@@ -302,6 +302,7 @@ export class CropArea {
     this.renderClicked = this.renderClicked.bind(this);
     this.render = this.render.bind(this);
     this.onPopupResize = this.onPopupResize.bind(this);
+    this.applyAspectRatio = this.applyAspectRatio.bind(this);
   }
 
   private open(): void {
@@ -313,6 +314,7 @@ export class CropArea {
     this.setTopLeft();
     this.initCropLayer();
     this.attachEvents();
+    this.applyAspectRatio();
 
     this._isOpen = true;
   }
@@ -1010,12 +1012,16 @@ export class CropArea {
 
   private ratioButtonClicked(ratio: IAspectRatio) {
     this.aspectRatio = ratio;
+    this.applyAspectRatio();
+    this.aspectRatioButton.hideDropdown();
+  }
+
+  private applyAspectRatio() {
     this.setCropLayerAspectRatio();
     this.aspectRatioButton.icon = AspectRatioIconGenerator.getIcon(
-      ratio.horizontal,
-      ratio.vertical
+      this.aspectRatio.horizontal,
+      this.aspectRatio.vertical
     );
-    this.aspectRatioButton.hideDropdown();
   }
 
   private setCropLayerAspectRatio() {
