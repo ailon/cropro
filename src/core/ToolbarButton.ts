@@ -28,6 +28,8 @@ export class ToolbarButton {
     this._isActive = value;
     this.adjustClassName();
   }
+
+  private _isHidden = false;
   
   public className: string;
   public colorsClassName: string;
@@ -54,7 +56,7 @@ export class ToolbarButton {
       this.buttonContainer.addEventListener('click', () => this.onClick());
     }
     this.uiContainer.appendChild(this.buttonContainer);
-    this.uiContainer.style.display = 'inline-block';
+    this.uiContainer.style.display = this._isHidden ? 'none' : 'inline-block';
 
     return this.uiContainer;
   }
@@ -67,5 +69,9 @@ export class ToolbarButton {
         this.buttonContainer.className = this.buttonContainer.className.replace(this.activeColorsClassName, '');
       }
     }
+  }
+
+  public hide(): void {
+    this._isHidden = true;
   }
 }

@@ -884,6 +884,10 @@ export class CropArea {
 
     cropBlock.addButton(this.aspectRatioButton);
 
+    if (this.aspectRatios.length < 2) {
+      this.aspectRatioButton.hide();
+    }
+
     const gridButton = new ToolbarButton(GridIcon, 'Toggle grid');
     gridButton.isActive = this.isGridVisible;
     gridButton.onClick = () => {
