@@ -14,19 +14,31 @@ export interface IStyleSettings {
    * Background color of toolbar buttons on hover.
    */
   toolbarBackgroundHoverColor?: string;
-
+  /**
+   * Background color of active (pressed) toolbar buttons.
+   */
   toolbarBackgroundActiveColor?: string;
-
   /**
    * Foreground color of toolbar icons.
    */
   toolbarColor?: string;
 
+  /**
+   * Color of the crop shade (outside area).
+   */
   cropShadeColor?: string;
+  /**
+   * Line color of the crop frame.
+   */
   cropFrameColor?: string;
+  /**
+   * Outline color of the crop frame grips.
+   */
   gripColor?: string;
+  /**
+   * Fill color of the crop frame grips.
+   */
   gripFillColor?: string;
-
 
   /**
    * Base height of the toolbar block in pixels.
@@ -58,9 +70,17 @@ export interface IStyleSettings {
    */
   toolbarActiveButtonStyleColorsClassName?: string;
 
+  /**
+   * CSS class name defining the visual style of the straightening control.
+   */
   toolbarStraightenerColorsClassName?: string;
-
+  /**
+   * CSS class name defining the visual style of the OK button.
+   */
   toolbarOkButtonStyleColorsClassName?: string;
+  /**
+   * CSS class name defining the visual style of the close button.
+   */
   toolbarCloseButtonStyleColorsClassName?: string;
 
   /**
@@ -71,5 +91,4 @@ export interface IStyleSettings {
    * If set to true, the bottom toolbar is hidden.
    */
   hideBottomToolbar?: boolean;
-
 }

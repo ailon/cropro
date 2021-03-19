@@ -27,8 +27,8 @@ export class SvgHelper {
 
   /**
    * Creates an SVG rectangle with the specified width and height.
-   * @param width 
-   * @param height 
+   * @param width
+   * @param height
    * @param attributes - additional attributes.
    */
   public static createRect(
@@ -49,10 +49,10 @@ export class SvgHelper {
 
   /**
    * Creates an SVG line with specified end-point coordinates.
-   * @param x1 
-   * @param y1 
-   * @param x2 
-   * @param y2 
+   * @param x1
+   * @param y1
+   * @param x2
+   * @param y2
    * @param attributes - additional attributes.
    */
   public static createLine(
@@ -99,7 +99,7 @@ export class SvgHelper {
 
   /**
    * Creates an SVG circle with the specified radius.
-   * @param radius 
+   * @param radius
    * @param attributes - additional attributes.
    */
   public static createCircle(
@@ -123,8 +123,8 @@ export class SvgHelper {
 
   /**
    * Creates an SVG ellipse with the specified horizontal and vertical radii.
-   * @param rx 
-   * @param ry 
+   * @param rx
+   * @param ry
    * @param attributes - additional attributes.
    */
   public static createEllipse(
@@ -171,13 +171,13 @@ export class SvgHelper {
 
   /**
    * Creates an SVG marker.
-   * @param id 
-   * @param orient 
-   * @param markerWidth 
-   * @param markerHeight 
-   * @param refX 
-   * @param refY 
-   * @param markerElement 
+   * @param id
+   * @param orient
+   * @param markerWidth
+   * @param markerHeight
+   * @param refX
+   * @param refY
+   * @param markerElement
    */
   public static createMarker(
     id: string,
@@ -267,19 +267,16 @@ export class SvgHelper {
 
   /**
    * Creates an SVG point with the specified coordinates.
-   * @param x 
-   * @param y 
+   * @param x
+   * @param y
    */
-  public static createPoint(      
-    x: number,
-    y: number
-  ): SVGPoint {
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const svgPoint = svg.createSVGPoint();
-      svgPoint.x = x;
-      svgPoint.y = y;
-  
-      return svgPoint;
+  public static createPoint(x: number, y: number): SVGPoint {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const svgPoint = svg.createSVGPoint();
+    svgPoint.x = x;
+    svgPoint.y = y;
+
+    return svgPoint;
   }
 
   /**
@@ -291,10 +288,7 @@ export class SvgHelper {
     d: string,
     attributes?: Array<[string, string]>
   ): SVGPathElement {
-    const path = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path'
-    );
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
     path.setAttribute('d', d);
     if (attributes) {
@@ -304,14 +298,17 @@ export class SvgHelper {
     return path;
   }
 
+  /**
+   * Creates an arbitrary SVG element based on the name passed.
+   * @param elName - element name.
+   * @param attributes - additional attributes.
+   * @returns - created element.
+   */
   public static createElement(
     elName: string,
     attributes?: Array<[string, string]>
   ): SVGElement {
-    const el = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      elName
-    );
+    const el = document.createElementNS('http://www.w3.org/2000/svg', elName);
 
     if (attributes) {
       SvgHelper.setAttributes(el, attributes);
@@ -320,6 +317,18 @@ export class SvgHelper {
     return el;
   }
 
+  /**
+   * Returns a hollow rectangle defined by outer and inner rectangles.
+   * @param x - left coordinate.
+   * @param y - top coordinate.
+   * @param outerWidth - width of the outher rectangle.
+   * @param outerHeight - height of the outer rectangle.
+   * @param innerX - left coordinate of the inner rectangle.
+   * @param innerY - top coordinate of the inner rectangle.
+   * @param innerWidth - width of the inner rectangle.
+   * @param innerHeight - height of the inner rectangle.
+   * @returns - path definition for the hollow rectangle.
+   */
   public static getHollowRectanglePath(
     x: number,
     y: number,
@@ -328,21 +337,20 @@ export class SvgHelper {
     innerX: number,
     innerY: number,
     innerWidth: number,
-    innerHeight: number,
+    innerHeight: number
   ): string {
-
     // const hDepth = (outerWidth-innerWidth)/2;
     // const vDepth = (outerHeight-innerHeight)/2;
 
     // const d = `M${x},${y
     //   }V${y+outerHeight}H${x+outerWidth}V${y}H${x+hDepth}V${y+vDepth
     //   }H${x+hDepth+innerWidth}V${y+vDepth+innerHeight}H${x+hDepth}V${y}Z`;
-    const d = `M${x},${y
-      }V${y+outerHeight}H${x+outerWidth}V${y}H${innerX}V${innerY
-      }H${innerX+innerWidth}V${innerY+innerHeight}H${innerX}V${y}Z`;
+    const d = `M${x},${y}V${y + outerHeight}H${
+      x + outerWidth
+    }V${y}H${innerX}V${innerY}H${innerX + innerWidth}V${
+      innerY + innerHeight
+    }H${innerX}V${y}Z`;
 
     return d;
   }
-
-
 }

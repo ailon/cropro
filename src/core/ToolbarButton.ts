@@ -3,9 +3,15 @@
  */
 export type ToolbarButtonClickHandler = () => void;
 
+/**
+ * Represents a single toolbar button.
+ */
 export class ToolbarButton {
   private _icon: string;
 
+  /**
+   * Button's SVG icon.
+   */
   public get icon(): string {
     return this._icon;
   }
@@ -15,12 +21,24 @@ export class ToolbarButton {
   }
 
   private title: string;
+  /**
+   * Method called when the button is clicked.
+   */
   public onClick: ToolbarButtonClickHandler;
 
+  /**
+   * Container of button's UI.
+   */
   protected uiContainer: HTMLDivElement;
+  /**
+   * Button element.
+   */
   protected buttonContainer: HTMLDivElement;
 
   private _isActive = false;
+  /**
+   * Gets or sets whether the button is active/enabled or not.
+   */
   public get isActive(): boolean {
     return this._isActive;
   }
@@ -31,10 +49,24 @@ export class ToolbarButton {
 
   private _isHidden = false;
   
+  /**
+   * CSS class name representing button's layout.
+   */
   public className: string;
+  /**
+   * CSS class name representing button's colors.
+   */
   public colorsClassName: string;
+  /**
+   * CSS class name representing active/pressed button's colors.
+   */
   public activeColorsClassName: string;
 
+  /**
+   * Creates a new toolbar button.
+   * @param icon - SVG icon.
+   * @param title - button's title.
+   */
   constructor(
     icon: string,
     title: string
@@ -46,6 +78,10 @@ export class ToolbarButton {
     this.adjustClassName = this.adjustClassName.bind(this);
   }
 
+  /**
+   * Returns button's UI.
+   * @returns button UI as an `HTMLElement`.
+   */
   public getUI(): HTMLElement {
     this.buttonContainer = document.createElement('div');
     this.buttonContainer.title = this.title;
@@ -71,6 +107,9 @@ export class ToolbarButton {
     }
   }
 
+  /**
+   * Hides the button.
+   */
   public hide(): void {
     this._isHidden = true;
   }

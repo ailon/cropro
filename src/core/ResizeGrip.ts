@@ -1,7 +1,7 @@
 import { SvgHelper } from './SvgHelper';
 
 /**
- * Represents a single resize-manipulation grip used in marker's manipulation controls.
+ * Represents a single resize grip.
  */
 export class ResizeGrip {
   /**
@@ -14,11 +14,14 @@ export class ResizeGrip {
    */
   public readonly GRIP_SIZE = 10;
 
-  private color;
-  private fillColor;
+  private color: string;
+  private fillColor: string;
 
   /**
    * Creates a new grip.
+   * 
+   * @param color - outline color.
+   * @param fillColor - fill color.
    */
   constructor(color: string, fillColor: string) {
     this.color = color;
@@ -55,6 +58,11 @@ export class ResizeGrip {
     }
   }
 
+  /**
+   * Sets center of the grip circle.
+   * @param x - x coordinate of the center.
+   * @param y - y coordinate of the center.
+   */
   public setCenter(x: number, y: number): void {
     this.visual.childNodes.forEach(circle =>
     SvgHelper.setAttributes(circle as SVGCircleElement, [

@@ -60,6 +60,10 @@ export class StyleManager {
     return `${this.classNamePrefix}_fade_out`;
   }
 
+  /**
+   * Initializes a new style manager.
+   * @param instanceNo - instance id.
+   */
   constructor(instanceNo: number) {
     this._classNamePrefix = `${this._classNamePrefix}_${instanceNo}_`;
   }

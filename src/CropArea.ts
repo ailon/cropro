@@ -26,22 +26,37 @@ import { StraightenControl } from './core/StraightenControl';
 import { Renderer } from './core/Renderer';
 
 /**
- * Event handler type for {@linkcode MarkerArea} `render` event.
+ * Event handler type for {@linkcode CropArea} `render` event.
  */
 export type RenderEventHandler = (
   dataURL: string,
   state?: CropAreaState
 ) => void;
 /**
- * Event handler type for {@linkcode MarkerArea} `close` event.
+ * Event handler type for {@linkcode CropArea} `close` event.
  */
 export type CloseEventHandler = () => void;
 
 /**
- * CROPRO display mode - `inline` or `popup`.
+ * CROPRO display mode - `inline` or `popup` (full screen).
  */
 export type DisplayMode = 'inline' | 'popup';
 
+/**
+ * Main CROPRO class.
+ * 
+ * Simple usage example:
+ * 
+ * ```javascript
+ * let ca = new CropArea(target);
+ * ca.addRenderEventListener((dataUrl, state) => {
+ *     const res = document.createElement('img');
+ *     res.src = dataUrl;
+ *     document.body.appendChild(res);
+ * });
+ * this.ca.show();
+ * ```
+ */
 export class CropArea {
   private target: HTMLImageElement;
   private targetObserver: ResizeObserver;
@@ -74,6 +89,9 @@ export class CropArea {
     return this._instanceNo;
   }
 
+  /**
+   * Manage style releated settings via the `styles` property.
+   */
   public styles: StyleManager;
 
   private cropLayerContainer: SVGGElement;
@@ -82,6 +100,11 @@ export class CropArea {
   private cropRect: IRect;
 
   private _zoomToCropEnabled = true;
+  /**
+   * Get whether zoom-to-crop feature is enabled.
+   * Set to true to enable zooming to crop area all the time.
+   * When set to false the whole image is shown and cropping is done within it.
+   */
   public get zoomToCropEnabled(): boolean {
     return this._zoomToCropEnabled;
   }
@@ -100,6 +123,10 @@ export class CropArea {
   private flippedVertically = false;
 
   private _isGridVisible = true;
+  /**
+   * Get whether alginment grid is visible.
+   * When set to true alignment grid is shown, hidden otherwise.
+   */
   public get isGridVisible(): boolean {
     return this._isGridVisible;
   }
@@ -110,6 +137,9 @@ export class CropArea {
     }
   }
   private _gridLines = 2;
+  /**
+   * Number of grid lines in the alignment grid.
+   */
   public get gridLines(): number {
     return this._gridLines;
   }
@@ -121,6 +151,9 @@ export class CropArea {
   }
 
   private _rotationAngle = 0;
+  /**
+   * Rotation angle of the original image with the crop area.
+   */
   public get rotationAngle(): number {
     return this._rotationAngle;
   }
@@ -221,7 +254,9 @@ export class CropArea {
   public renderHeight?: number;
 
   /**
-   * Display mode.
+   * Display mode. 
+   * `inline` for cropping right on top of the original image,
+   * `popup` for a full-screen experience.
    */
   public displayMode: DisplayMode = 'inline';
 
@@ -235,18 +270,24 @@ export class CropArea {
    */
   public toolbarHeight = 40;
 
-  public straightenerWidth = 300;
-
+  /**
+   * Aspect ratio options. 
+   * Displayed in the aspect ratio dropdown. 
+   * When only one option is specified the aspect ratio button is hidden.
+   */
   public aspectRatios: IAspectRatio[] = [
     { horizontal: 0, vertical: 0 },
-    { horizontal: 1, vertical: 1 },
     { horizontal: 4, vertical: 3 },
     { horizontal: 3, vertical: 2 },
     { horizontal: 16, vertical: 9 },
+    { horizontal: 1, vertical: 1 },
     { horizontal: 3, vertical: 4 },
     { horizontal: 2, vertical: 3 },
     { horizontal: 9, vertical: 16 },
   ];
+  /**
+   * Currently active aspect ratio.
+   */
   public aspectRatio = this.aspectRatios[0];
 
   private aspectRatioButton: DropdownToolbarButton;
@@ -447,25 +488,13 @@ export class CropArea {
     }px`;
     SvgHelper.setAttributes(this.editingTarget, [
       ['width', `${this.imageWidth}`],
-      ['height', `${this.imageHeight}`],
-      // ['x', `${this.CANVAS_MARGIN}`],
-      // ['y', `${this.CANVAS_MARGIN}`],
+      ['height', `${this.imageHeight}`]
     ]);
-    // this.editingTarget.width = this.imageWidth;
-    // this.editingTarget.height = this.imageHeight;
-    // this.editingTarget.style.width = `${this.imageWidth}px`;
-    // this.editingTarget.style.height = `${this.imageHeight}px`;
-    // this.editingTarget.style.margin = `${this.CANVAS_MARGIN}px`;
   }
 
   private resize(newWidth: number, newHeight: number) {
-    // @todo
-    // const scaleX = newWidth / this.imageWidth;
-    // const scaleY = newHeight / this.imageHeight;
-
     this.imageWidth = Math.round(newWidth);
     this.imageHeight = Math.round(newHeight);
-    // this.editingTarget.src = this.target.src;
     this.setEditingTargetSize();
 
     this.cropImage.setAttribute('width', this.paddedImageWidth.toString());
@@ -490,11 +519,6 @@ export class CropArea {
     }
 
     this.cropLayer.scaleCanvas(this.imageWidth, this.imageHeight);
-
-    // @todo
-    // if (this.toolbar !== undefined) {
-    //   this.toolbar.adjustLayout();
-    // }
   }
 
   private setEditingTarget() {
@@ -644,26 +668,10 @@ export class CropArea {
     SvgHelper.setAttributes(this.editingTargetContainer, [
       ['transform-origin', `${zoomCenterX}px ${zoomCenterY}px`],
     ]);
-    // SvgHelper.setAttributes(this.editingTargetContainer, [
-    //   [
-    //     'transform-origin',
-    //     `${(zoomCenterX / this.imageWidth) * 100}% ${
-    //       (zoomCenterY / this.imageHeight) * 100
-    //     }%`,
-    //   ],
-    // ]);
 
     const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
       0
     );
-    // zoomTranslate.setTranslate(
-    //   this.cropRect.x * this.zoomFactor, // + this.CANVAS_MARGIN * this.zoomFactor + this.CANVAS_MARGIN,
-    //   this.cropRect.y * this.zoomFactor // + this.CANVAS_MARGIN * this.zoomFactor + this.CANVAS_MARGIN
-    // );
-    // zoomTranslate.setTranslate(
-    //   (this.cropRect.x - this.CANVAS_MARGIN + this.cropRect.width / 2) * this.zoomFactor - zoomCenterX,
-    //   (this.cropRect.y - this.CANVAS_MARGIN + this.cropRect.height / 2) * this.zoomFactor - zoomCenterY,
-    // );
     zoomTranslate.setTranslate(
       this.imageWidth / 2 - zoomCenterX + this.CANVAS_MARGIN,
       this.imageHeight / 2 - zoomCenterY + this.CANVAS_MARGIN
@@ -787,11 +795,6 @@ export class CropArea {
 
     this.uiDiv.appendChild(this.topToolbar.getUI());
 
-    // @todo
-    // this.toolbar = new Toolbar(this.uiDiv, this.settings.displayMode, this._availableMarkerTypes, this.uiStyleSettings);
-    // this.toolbar.addButtonClickListener(this.toolbarButtonClicked);
-    // this.toolbar.show();
-
     this.contentDiv = document.createElement('div');
     this.contentDiv.style.display = 'flex';
     this.contentDiv.style.alignItems = 'center';
@@ -804,8 +807,6 @@ export class CropArea {
       this.contentDiv.style.maxHeight = `calc(100vh - ${
         this.popupMargin * 2 + this.toolbarHeight * 2
       }px)`;
-      // this.contentDiv.style.maxHeight = `calc(100vh - ${
-      //   this.settings.popupMargin * 2 + this.uiStyleSettings.toolbarHeight * 3.5}px)`;
       this.contentDiv.style.maxWidth = `calc(100vw - ${
         this.popupMargin * 2
       }px)`;
@@ -824,9 +825,6 @@ export class CropArea {
     }
     this.editorCanvas.style.pointerEvents = 'none';
     this.contentDiv.appendChild(this.editorCanvas);
-
-    // this.editingTarget = document.createElement('img');
-    // this.editorCanvas.appendChild(this.editingTarget);
 
     this.uiDiv.appendChild(this.bottomToolbar.getUI());
 
@@ -1224,6 +1222,11 @@ export class CropArea {
     this.editingTarget.transform.baseVal.replaceItem(flip, 0);
   }
 
+  /**
+   * Initiates rendering of the cropped image.
+   * Add an event listener for the `render` event via {@linkcode addRenderEventListener}
+   * to get the rendering result.
+   */
   public async startRenderAndClose(): Promise<void> {
     const result = await this.render();
     const state = this.getState();

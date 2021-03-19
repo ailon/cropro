@@ -6,10 +6,16 @@ import { IPoint } from './IPoint';
  */
 export type AngleChangeHandler = (delta: number) => void;
 
+/**
+ * Represents a custom straightener/rotation control.
+ */
 export class StraightenControl {
   private title: string;
 
   private _angle = 0;
+  /**
+   * Current rotation angle.
+   */
   public get angle(): number {
     return this._angle;
   }
@@ -18,24 +24,43 @@ export class StraightenControl {
     this.setAngleLabel();
     this.positionScaleShape();
   }
+  /**
+   * Method to call when rotation angle changes.
+   */
   public onAngleChange: AngleChangeHandler;
 
   private previousPoint: IPoint;
   private isDragging = false;
 
-  protected uiContainer: HTMLDivElement;
-  protected controlContainer: HTMLDivElement;
+  private uiContainer: HTMLDivElement;
+  private controlContainer: HTMLDivElement;
 
   private scaleShape: SVGPathElement;
   private angleLabelElement: SVGTextElement;
   private angleLabelText: SVGTSpanElement;
 
+  /**
+   * CSS class name representing layout style.
+   */
   public className: string;
+  /**
+   * CSS class name representing visual style.
+   */
   public colorsClassName: string;
 
+  /**
+   * Width of the scale image (max width of the control).
+   */
   public width = 401;
+  /**
+   * Control height.
+   */
   public height = 24;
 
+  /**
+   * Initializes new straightener control.
+   * @param title - control title.
+   */
   constructor(title: string) {
     this.title = title;
     this.uiContainer = document.createElement('div');
@@ -48,6 +73,10 @@ export class StraightenControl {
     this.positionScaleShape = this.positionScaleShape.bind(this);
   }
 
+  /**
+   * Returns control UI.
+   * @returns control's UI as an `HTMLElement`.
+   */
   public getUI(): HTMLElement {
     this.controlContainer = document.createElement('div');
     this.controlContainer.title = this.title;
