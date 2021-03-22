@@ -2,7 +2,16 @@ import { AspectRatio } from './AspectRatio';
 import { SvgHelper } from './SvgHelper';
 import AspectIcon from './../assets/toolbar-icons/aspect.svg';
 
+/**
+ * Generates custom aspect ratio icons for the toolbar.
+ */
 export class AspectRatioIconGenerator {
+  /**
+   * Returns an aspect ratio icon for dimenssions provided.
+   * @param hRatio - horizontal scale.
+   * @param vRatio - vertical scale.
+   * @returns aspect ratio icon as an SVG image string.
+   */
   public static getIcon(hRatio: number, vRatio: number): string {
     if (hRatio > 0 && vRatio > 0) {
       const ar = new AspectRatio(hRatio, vRatio);

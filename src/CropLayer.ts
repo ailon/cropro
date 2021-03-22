@@ -3,8 +3,14 @@ import { IPoint } from './core/IPoint';
 import { ResizeGrip } from './core/ResizeGrip';
 import { SvgHelper } from './core/SvgHelper';
 
+/**
+ * Event handler type for crop rectangle change event.
+ */
 export type CropChangeHandler = (rect: IRect) => void;
 
+/**
+ * Represents crop rectangle.
+ */
 export interface IRect {
   x: number;
   y: number;
@@ -12,16 +18,13 @@ export interface IRect {
   height: number;
 }
 
+/**
+ * Represents the interactive cropping layer.
+ */
 export class CropLayer {
   private canvasWidth: number;
   private canvasHeight: number;
   private margin: number;
-  private get paddedCanvasWidth(): number {
-    return this.canvasWidth + this.margin * 2;
-  }
-  private get paddedCanvasHeight(): number {
-    return this.canvasHeight + this.margin * 2;
-  }
 
   private cropRect: IRect;
 
@@ -40,6 +43,9 @@ export class CropLayer {
   private previousPoint: IPoint;
 
   private _aspectRatio: AspectRatio;
+  /**
+   * Currently selected aspect ratio.
+   */
   public get aspectRatio(): AspectRatio {
     return this._aspectRatio;
   }
@@ -50,6 +56,9 @@ export class CropLayer {
   }
 
   private _isGridVisible = true;
+  /**
+   * If set to true, alignment grid is visible, hidden otherwise.
+   */
   public get isGridVisible(): boolean {
     return this._isGridVisible;
   }
@@ -62,12 +71,18 @@ export class CropLayer {
     }
   }
 
+  /**
+   * Number of lines in the alignment grid.
+   */
   public numberOfGridLines = 2;
   private gridContainer: SVGGElement;
   private horizontalGridLines: SVGLineElement[] = [];
   private verticalGridLines: SVGLineElement[] = [];
 
   private _zoomFactor = 1;
+  /**
+   * Current zoom (scale) factor/ratio.
+   */
   public get zoomFactor(): number {
     return this._zoomFactor;
   }
@@ -78,13 +93,36 @@ export class CropLayer {
 
   private cropRectChanged = false;
 
+  /**
+   * Method to call when crop rectange changes.
+   */
   public onCropChange: CropChangeHandler;
 
+  /**
+   * Color of the crop shade (outside area of the crop rectangle).
+   */
   public cropShadeColor: string;
+  /**
+   * Color of the crop frame line.
+   */
   public cropFrameColor: string;
+  /**
+   * Outline color of the resizing grips.
+   */
   public gripColor: string;
+  /**
+   * Fill color of the resizing grips.
+   */
   public gripFillColor: string;
 
+  /**
+   * Initializes a new CropLayer.
+   * 
+   * @param canvasWidth - width of the crop area canvas.
+   * @param canvasHeight - height of the crop area canvas.
+   * @param margin - margin around the actual image.
+   * @param container - container element for the crop layer.
+   */
   constructor(
     canvasWidth: number,
     canvasHeight: number,
@@ -106,6 +144,9 @@ export class CropLayer {
     this.getRescaledRect = this.getRescaledRect.bind(this);
   }
 
+  /**
+   * Opens crop layer.
+   */
   public open(): void {
     this.cropShadeElement = SvgHelper.createPath('M0,0Z', [
       ['fill', this.cropShadeColor],
@@ -162,6 +203,11 @@ export class CropLayer {
     this.attachEvents();
   }
 
+  /**
+   * Sets current crop rectangle.
+   * 
+   * @param rect - new crop rectangle.
+   */
   public setCropRectangle(rect: IRect): void {
     this.cropRect = rect;
     const visibleRect = Object.assign({}, this.cropRect);
@@ -279,14 +325,6 @@ export class CropLayer {
       this.move(this.clientToLocalCoordinates(ev.clientX, ev.clientY));
     } else if (this.activeGrip) {
       const localPoint = this.clientToLocalCoordinates(ev.clientX, ev.clientY);
-      // localPoint.x = Math.min(
-      //   Math.max(localPoint.x, this.margin),
-      //   this.margin + this.canvasWidth
-      // );
-      // localPoint.y = Math.min(
-      //   Math.max(localPoint.y, this.margin),
-      //   this.margin + this.canvasHeight
-      // );
       this.resize(localPoint);
     }
     ev.preventDefault();
@@ -464,6 +502,17 @@ export class CropLayer {
     }
   }
 
+  /**
+   * Scales a rectangle based on the original and new canvas size.
+   * 
+   * @param oldCanvasWidth - original canvas width.
+   * @param oldCanvasHeight - original canvas height.
+   * @param newCanvasWidth - new canvas width.
+   * @param newCanvasHeight - new canvas height.
+   * @param oldRect - original crop rectangle.
+   * @param margin - margin around the image.
+   * @returns - adjusted (scaled) crop rectangle.
+   */
   public getRescaledRect(
     oldCanvasWidth: number,
     oldCanvasHeight: number,
@@ -484,6 +533,12 @@ export class CropLayer {
     return newRect;
   }
 
+  /**
+   * Scales canvas to the new dimensions.
+   * 
+   * @param newCanvasWidth - new canvas width.
+   * @param newCanvasHeight - new canvas height.
+   */
   public scaleCanvas(newCanvasWidth: number, newCanvasHeight: number): void {
     const newRect = this.getRescaledRect(
       this.canvasWidth,

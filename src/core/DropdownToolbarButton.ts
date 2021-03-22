@@ -1,11 +1,23 @@
 import { ToolbarButton } from './ToolbarButton';
 
+/**
+ * Toolbar button with a dropdown of other toolbar buttons.
+ */
 export class DropdownToolbarButton extends ToolbarButton {
   private dropdownBlock: HTMLDivElement;
   private isDropdownOpen = false;
   private dropdownButtons: ToolbarButton[];
+  /**
+   * CSS class name for the dropdown element.
+   */
   public dropdownClassName: string;
 
+  /**
+   * Initializes a drowpdown toolbar button.
+   * @param icon - default icon.
+   * @param title - button title.
+   * @param dropdownButtons - list of buttons in the dropdown section.
+   */
   constructor(icon: string, title: string, dropdownButtons: ToolbarButton[]) {
     super(icon, title);
     this.onClick = this.dropdownButtonClicked;
@@ -44,11 +56,17 @@ export class DropdownToolbarButton extends ToolbarButton {
     this.dropdownBlock.style.display = this.isDropdownOpen ? 'inline-block' : 'none';
   }
 
+  /**
+   * Expands dropdown section.
+   */
   public showDropdown(): void {
     this.isDropdownOpen = true;
     this.toggleDropdown();
   }
 
+  /**
+   * Collapses dropdown section.
+   */
   public hideDropdown(): void {
     this.isDropdownOpen = false;
     this.toggleDropdown();

@@ -11,7 +11,7 @@
     "lint": "eslint src",
     "start": "rollup --config rollup.config.dev.js -w",
     "build": "yarn lint && rollup --config rollup.config.prod.js",
-    "docs": "typedoc"
+    "docs": "typedoc --excludePrivate --name \"CROPRO Class Reference\" --disableSources --readme none"
   },
   "repository": {
     "type": "git",

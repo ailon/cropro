@@ -1,5 +1,9 @@
 import { IRect } from './CropLayer';
 
+/**
+ * Represents state of the CropArea.
+ * Used to preserve and restore state between sessions.
+ */
 export interface CropAreaState {
   /**
    * Editing canvas width.
