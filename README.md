@@ -1,112 +1,61 @@
-# Browser Library Developer Starter Kit
+# CROPRO &mdash; image cropping and rotation component for your web apps.
 
-This repository is a starting point for efficient development of JavaScript libraries targeting use
-in browser applications.
+CROPRO is a JavaScript browser library for adding image cropping and rotation functionality to 
+your web applications.
 
-## Goals
+> For a more detailed "Getting started" and other docs and tutorials, please refer to the [official documentation](https://markerjs.com/docs/cropro).
 
-This repository is based on the need to have an easy and fairly simple starting point 
-for development of JavaScript libraries with these goals in mind:
+## Installation
 
-### Development
-- using [TypeScript](https://www.typescriptlang.org/)
-- linting (with [ESLint](https://eslint.org/))
-- formatting (with [Prettier](https://prettier.io/))
-
-### Debugging & manual testing
-- manual testing "app" with live reload
-- ready for debugging in Visual Studio Code
-
-### Build & publish
-- build UMD and ESM bundles
-- build typings in a single file
-- copy license, readme, and sanitized package.json
-- ready to be published to npm
-
-### Documentation
-- generate reference documentation
-
-### Misc
-- created around [yarn](https://yarnpkg.com/) but feel free to use npm instead.
-
-## How to use
-
-### Setup
-
-1. Create a target folder on your drive.
-2. Clone this repository into it:
-
-```shell
-git clone https://github.com/ailon/browser-lib-starter.git .
 ```
-3. Delete `.git` sub-folder and re-initialize your repository
-```shell
-git init
-```
-4. Go through `package.json` and `rollup.config.prod.js` and change names, descriptions, 
-and other information where needed.
-5. Install dependencies by running:
-```shell
-yarn
+npm install cropro
 ```
 
+or 
 
-### Develop & debug
-
-Your library code goes under `/src`. 
-This repository includes a sample class in `src/logic/LibDemo.ts` - fill free to remove it.
-Export everything that needs to be exported in `src/index.ts`.
-
-Write your manual testing code in `/test/manual/experiments.ts`. 
-The manual testing web page template is in `template.html`. 
-
-**Note** that while changes to `experiments.ts`
-are hot-reloaded, changes to `template.html` are not.
-
-To start a dev/debugging session run:
-
-```shell
-yarn start
+```
+yarn add cropro
 ```
 
-You can set breakpoints in your code and run a debugging session in Visual Studio Code and other editors.
+## Usage
 
-### Build & publish
+To add CROPRO to your web application follow these 3 easy steps:
 
-You can build your ready-to-publish library with
+1. Create an instance of `cropro.CropArea` by passing a target image reference to the constructor.
+2. Set an event handler for `render` event.
+3. Call the `show()` method.
 
-```shell
-yarn build
+Here's a simple example:
+
+```js
+// skip this line if you are importing cropro into the global space via the script tag
+import * as cropro from 'cropro';
+
+// create an instance of CropArea and pass the target image reference as a parameter
+let cropArea = new cropro.CropArea(document.getElementById('myimg'));
+
+// register an event listener for when user clicks OK/save in the UI
+cropArea.addRenderEventListener(dataUrl => {
+  // we are setting the cropped result to replace our original image on the page
+  // but you can set a different image or upload it to your server
+  document.getElementById('myimg').src = dataUrl;
+});
+
+// finally, call the show() method and CROPRO UI opens
+cropArea.show();
 ```
 
-The output is in the `/dist` sub-folder which you can publish to npm by running
+## Demos
+coming soon.
 
-```shell
-npm publish ./dist
-```
-
-### Building reference docs
-
-Write your [doc-comments](https://typedoc.org/guides/doccomments/) in your code then run
-
-```shell
-yarn docs
-```
-
-The docs are generated in `/docs` which by default is included in `.gitignore`. 
-You may want to remove it from there depending on your needs.
-
-## Missing stuff and known issues
-
-**There's no automated testing of any sort** as I lack the knowledge to implement any of it in a meaningful
-way for interactive browser-focused libraries. 
-In case you have the skills and know-how please reach out in the issues and, potentially, submit a pull-request.
-
-**HTML template for manual testing (`template.html`) is not hot-reloaded.** Generally, this shouldn't be a big deal as you should change your code in `experiments.ts` for the most part. But be aware that if you need to change the HTML you will have to restart the session.
+## More docs and tutorials
+coming soon.
 
 ## Credits
 
-The whole project is based around [rollup.js](http://rollupjs.org/guide/en/) and plugins for it. See `package.json` for the list of dev dependencies.
+cropro is using icons from [Material Design Icons](https://materialdesignicons.com/) for its toolbar.
 
-Created by [Alan Mendelevich](https://twitter.com/ailon) as a basis 
-for [marker.js 2](https://github.com/ailon/markerjs2/) and other libraries.
+## License
+Linkware (see [LICENSE](https://github.com/ailon/cropro/blob/master/LICENSE) for details) - the UI displays a small link back to the CROPRO website which should be retained.
+
+Alternative licenses are available through the [official website](https://markerjs.com/buy).
