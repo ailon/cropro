@@ -46,10 +46,10 @@ cropArea.show();
 ```
 
 ## Demos
-coming soon.
+Check out CROPRO demos [here](https://markerjs.com/demos/cropro/all-defaults/).
 
 ## More docs and tutorials
-coming soon.
+CROPRO docs can be found [here](https://markerjs.com/docs/cropro/getting-started).
 
 ## Credits
 
