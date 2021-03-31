@@ -54,7 +54,8 @@ export class Experiments {
   public showCropArea3(target: HTMLImageElement): void {
     this.ca = new CropArea(target);
     this.ca.gridLines = 8;
-    // ca.isGridVisible = false;
+    // this.ca.isGridVisible = false;
+    this.ca.zoomToCropEnabled = true;
     this.ca.displayMode = 'popup';
 
     this.ca.styles.settings.toolbarStyleColorsClassName = 'custom_toolbar background';

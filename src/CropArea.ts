@@ -656,51 +656,58 @@ export class CropArea {
   }
 
   private zoomToCrop() {
-    const zoomCenterX =
-      this.cropRect.x - this.CANVAS_MARGIN + this.cropRect.width / 2;
-    const zoomCenterY =
-      this.cropRect.y - this.CANVAS_MARGIN + this.cropRect.height / 2;
+    if (this.cropRect) {
+      const zoomCenterX =
+        this.cropRect.x - this.CANVAS_MARGIN + this.cropRect.width / 2;
+      const zoomCenterY =
+        this.cropRect.y - this.CANVAS_MARGIN + this.cropRect.height / 2;
 
-    this.zoomFactor = Math.min(
-      this.imageWidth / this.cropRect.width,
-      this.imageHeight / this.cropRect.height
-    );
-    SvgHelper.setAttributes(this.editingTargetContainer, [
-      ['transform-origin', `${zoomCenterX}px ${zoomCenterY}px`],
-    ]);
+      this.zoomFactor = Math.min(
+        this.imageWidth / this.cropRect.width,
+        this.imageHeight / this.cropRect.height
+      );
 
-    const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
-      0
-    );
-    zoomTranslate.setTranslate(
-      this.imageWidth / 2 - zoomCenterX + this.CANVAS_MARGIN,
-      this.imageHeight / 2 - zoomCenterY + this.CANVAS_MARGIN
-    );
-    this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
+      if (this.editingTargetContainer && this.cropLayer) {
+        SvgHelper.setAttributes(this.editingTargetContainer, [
+          ['transform-origin', `${zoomCenterX}px ${zoomCenterY}px`],
+        ]);
 
-    const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
-    zoomScale.setScale(this.zoomFactor, this.zoomFactor);
-    this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
+        const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
+          0
+        );
+        zoomTranslate.setTranslate(
+          this.imageWidth / 2 - zoomCenterX + this.CANVAS_MARGIN,
+          this.imageHeight / 2 - zoomCenterY + this.CANVAS_MARGIN
+        );
+        this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
 
-    this.cropLayer.zoomFactor = this.zoomFactor;
+        const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
+        zoomScale.setScale(this.zoomFactor, this.zoomFactor);
+        this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
+
+        this.cropLayer.zoomFactor = this.zoomFactor;
+      }
+    }
   }
 
   private unzoomFromCrop() {
     this.zoomFactor = 1;
-    SvgHelper.setAttributes(this.editingTargetContainer, [
-      ['transform-origin', `center`],
-    ]);
-    const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
-      0
-    );
-    zoomTranslate.setTranslate(this.CANVAS_MARGIN, this.CANVAS_MARGIN);
-    this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
+    if (this.editingTargetContainer && this.cropLayer) {
+      SvgHelper.setAttributes(this.editingTargetContainer, [
+        ['transform-origin', `center`],
+      ]);
+      const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
+        0
+      );
+      zoomTranslate.setTranslate(this.CANVAS_MARGIN, this.CANVAS_MARGIN);
+      this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
 
-    const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
-    zoomScale.setScale(1, 1);
-    this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
+      const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
+      zoomScale.setScale(1, 1);
+      this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
 
-    this.cropLayer.zoomFactor = this.zoomFactor;
+      this.cropLayer.zoomFactor = this.zoomFactor;
+    }
   }
 
   private cropRectChanged(rect: IRect) {
