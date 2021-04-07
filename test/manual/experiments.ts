@@ -35,7 +35,7 @@ export class Experiments {
     // ca.renderHeight = 480;
     this.ca.renderImageType = 'image/jpeg';
 
-    this.ca.styles.settings.hideTopToolbar = true;
+    // this.ca.styles.settings.hideTopToolbar = true;
     //this.ca.styles.settings.hideBottomToolbar = true;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

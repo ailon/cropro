@@ -1282,6 +1282,7 @@ export class CropArea {
       height: ${this.toolbarHeight}px;
       box-sizing: content-box;
       overflow: hidden;
+      line-height: 0px;
     `
       )
     );
@@ -1370,6 +1371,7 @@ export class CropArea {
       box-sizing: content-box;
       box-shadow: 3px 3px rgba(33, 33, 33, 0.1);
       margin: ${this.displayMode === 'inline' ? '0' : this.popupMargin}px;
+      line-height: 0px;
     `
       )
     );
