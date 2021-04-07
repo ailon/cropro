@@ -69,6 +69,12 @@ export interface IStyleSettings {
    * _Note_: should only be used for colors and similar styles. Changing layout-related styles here can break the UI.
    */
   toolbarActiveButtonStyleColorsClassName?: string;
+  /**
+   * CSS class name defining the visual style of the dropdown portion of a dropdown toolbar button.
+   *
+   * _Note_: should only be used for colors and similar styles. Changing layout-related styles here can break the UI.
+   */
+  toolbarDropdownStyleColorsClassName?: string;
 
   /**
    * CSS class name defining the visual style of the straightening control.

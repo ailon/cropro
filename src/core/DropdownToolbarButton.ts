@@ -11,6 +11,10 @@ export class DropdownToolbarButton extends ToolbarButton {
    * CSS class name for the dropdown element.
    */
   public dropdownClassName: string;
+  /**
+   * CSS class name for the dropdown element's colors.
+   */
+   public dropdownColorsClassName: string;
 
   /**
    * Initializes a drowpdown toolbar button.
@@ -26,7 +30,7 @@ export class DropdownToolbarButton extends ToolbarButton {
 
   private setupDropdown() {
     this.dropdownBlock = document.createElement('div');
-    this.dropdownBlock.className = this.dropdownClassName;
+    this.dropdownBlock.className = `${this.dropdownClassName} ${this.dropdownColorsClassName}`;
     this.dropdownBlock.style.display = 'none';
 
     this.dropdownButtons.forEach(btn => {

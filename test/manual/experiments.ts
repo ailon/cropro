@@ -61,6 +61,10 @@ export class Experiments {
     this.ca.aspectRatios = [
       { horizontal: 3, vertical: 2 },
       { horizontal: 4, vertical: 3 },
+      { horizontal: 3, vertical: 2 },
+      { horizontal: 4, vertical: 3 },
+      { horizontal: 3, vertical: 2 },
+      { horizontal: 4, vertical: 3 },
     ]
 
     this.ca.styles.settings.toolbarStyleColorsClassName = 'custom_toolbar background';
@@ -70,6 +74,8 @@ export class Experiments {
 
     this.ca.styles.settings.toolbarOkButtonStyleColorsClassName = 'custom_toolbar ok_button';
     this.ca.styles.settings.toolbarCloseButtonStyleColorsClassName = 'custom_toolbar close_button';
+    
+    this.ca.styles.settings.toolbarDropdownStyleColorsClassName = 'custom_toolbar background';
 
     this.ca.styles.settings.cropShadeColor = 'pink';
     this.ca.styles.settings.cropFrameColor = 'yellow';

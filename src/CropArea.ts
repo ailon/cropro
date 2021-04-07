@@ -171,6 +171,7 @@ export class CropArea {
   private toolbarButtonStyleColorsClass: StyleClass;
   private toolbarActiveButtonStyleColorsClass: StyleClass;
   private toolbarDropdownStyleClass: StyleClass;
+  private toolbarDropdownStyleColorsClass: StyleClass;
   private toolbarStraightenerBlockStyleClass: StyleClass;
   private toolbarStraightenerStyleClass: StyleClass;
   private toolbarStraightenerStyleColorsClass: StyleClass;
@@ -894,6 +895,10 @@ export class CropArea {
       ratioButtons
     );
     this.aspectRatioButton.dropdownClassName = this.toolbarDropdownStyleClass.name;
+    this.aspectRatioButton.dropdownColorsClassName = this.styles.settings
+      .toolbarDropdownStyleColorsClassName
+      ? this.styles.settings.toolbarDropdownStyleColorsClassName
+      : this.toolbarDropdownStyleColorsClass.name;
 
     cropBlock.addButton(this.aspectRatioButton);
 
@@ -1372,13 +1377,21 @@ export class CropArea {
         `
       position: absolute;
       max-width: ${this.toolbarHeight * 4}px;
-      background-color: ${this.styles.settings.toolbarBackgroundColor};
       z-index: 20;
       white-space: normal;
       box-sizing: content-box;
       box-shadow: 3px 3px rgba(33, 33, 33, 0.1);
       margin: ${this.displayMode === 'inline' ? '0' : this.popupMargin}px;
       line-height: 0px;
+    `
+      )
+    );
+
+    this.toolbarDropdownStyleColorsClass = this.styles.addClass(
+      new StyleClass(
+        'toolbar_dropdown_colors',
+        `
+      background-color: ${this.styles.settings.toolbarBackgroundColor};
     `
       )
     );
