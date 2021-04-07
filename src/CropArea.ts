@@ -1371,7 +1371,7 @@ export class CropArea {
         'toolbar_dropdown',
         `
       position: absolute;
-      width: ${this.toolbarHeight * 4}px;
+      max-width: ${this.toolbarHeight * 4}px;
       background-color: ${this.styles.settings.toolbarBackgroundColor};
       z-index: 20;
       white-space: normal;
