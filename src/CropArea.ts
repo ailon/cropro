@@ -285,10 +285,16 @@ export class CropArea {
     { horizontal: 2, vertical: 3 },
     { horizontal: 9, vertical: 16 },
   ];
+  private _aspectRatio: IAspectRatio;
   /**
    * Currently active aspect ratio.
    */
-  public aspectRatio = this.aspectRatios[0];
+  public set aspectRatio(value: IAspectRatio) {
+    this._aspectRatio = value;
+  }
+  public get aspectRatio():IAspectRatio {
+    return this._aspectRatio ?? this.aspectRatios[0];
+  } 
 
   private aspectRatioButton: DropdownToolbarButton;
 

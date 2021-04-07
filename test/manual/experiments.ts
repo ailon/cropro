@@ -58,6 +58,11 @@ export class Experiments {
     this.ca.zoomToCropEnabled = true;
     this.ca.displayMode = 'popup';
 
+    this.ca.aspectRatios = [
+      { horizontal: 3, vertical: 2 },
+      { horizontal: 4, vertical: 3 },
+    ]
+
     this.ca.styles.settings.toolbarStyleColorsClassName = 'custom_toolbar background';
     this.ca.styles.settings.toolbarButtonStyleColorsClassName = 'custom_toolbar button';
     this.ca.styles.settings.toolbarActiveButtonStyleColorsClassName = 'custom_toolbar button_active';
