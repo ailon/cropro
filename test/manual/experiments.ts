@@ -36,7 +36,7 @@ export class Experiments {
     this.ca.renderImageType = 'image/jpeg';
 
     // this.ca.styles.settings.hideTopToolbar = true;
-    //this.ca.styles.settings.hideBottomToolbar = true;
+    // this.ca.styles.settings.hideBottomToolbar = true;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.ca.addRenderEventListener((dataUrl: string, state: CropAreaState) => {

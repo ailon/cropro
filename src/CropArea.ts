@@ -754,9 +754,10 @@ export class CropArea {
     switch (this.displayMode) {
       case 'inline': {
         this.coverDiv.style.position = 'absolute';
+        const toolbarOffset = this.styles.settings.hideTopToolbar ? 0 : this.toolbarHeight;
         const coverTop =
-          this.target.offsetTop > this.toolbarHeight + this.CANVAS_MARGIN
-            ? this.target.offsetTop - (this.toolbarHeight + this.CANVAS_MARGIN)
+          this.target.offsetTop > toolbarOffset + this.CANVAS_MARGIN
+            ? this.target.offsetTop - (toolbarOffset + this.CANVAS_MARGIN)
             : 0;
         this.coverDiv.style.top = `${coverTop}px`;
         this.coverDiv.style.left = `${
@@ -845,7 +846,7 @@ export class CropArea {
 
   private addTopToolbar() {
     this.topToolbar = new Toolbar();
-    this.topToolbar.visibility = this.styles.settings.hideTopToolbar ? 'hidden' : 'visible';
+    this.topToolbar.display = this.styles.settings.hideTopToolbar ? 'none' : '';
     this.topToolbar.className = this.toolbarStyleClass.name;
     this.topToolbar.colorsClassName = this.styles.settings
       .toolbarStyleColorsClassName
@@ -954,7 +955,7 @@ export class CropArea {
 
   private addBottomToolbar() {
     this.bottomToolbar = new Toolbar();
-    this.bottomToolbar.visibility = this.styles.settings.hideBottomToolbar ? 'hidden' : 'visible';    
+    this.bottomToolbar.display = this.styles.settings.hideBottomToolbar ? 'none' : '';    
     this.bottomToolbar.className = this.toolbarStyleClass.name;
     this.bottomToolbar.colorsClassName = this.styles.settings
       .toolbarStyleColorsClassName

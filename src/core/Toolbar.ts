@@ -42,7 +42,7 @@ export class Toolbar {
   /**
    * Toolbar visibility.
    */
-  public visibility = 'visible';
+  public display = '';
 
   /**
    * Adds toolbar button block.
@@ -74,7 +74,7 @@ export class Toolbar {
   public getUI(): HTMLElement {
     const uiContainer = document.createElement('div');
     uiContainer.className = `${this.className} ${this.colorsClassName} ${this.fadeInClassName}`;
-    uiContainer.style.visibility = this.visibility;
+    uiContainer.style.display = this.display;
 
     this.blocks.forEach((block) => uiContainer.appendChild(block.getUI()));
 
