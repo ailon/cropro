@@ -77,6 +77,7 @@ export class CropArea {
   private editorCanvas: HTMLDivElement;
   private editingTargetContainer: SVGGElement;
   private editingTargetRotationContainer: SVGGElement;
+  private editingTargetRotationScaleContainer: SVGGElement;
   private editingTarget: SVGImageElement;
 
   private straightener: StraightenControl;
@@ -496,17 +497,19 @@ export class CropArea {
     SvgHelper.setAttributes(this.editingTarget, [
       ['width', `${this.imageWidth}`],
       ['height', `${this.imageHeight}`],
-      [
-        'transform-origin',
-        `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
-      ]
+      // [
+      //   'transform-origin',
+      //   `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
+      // ]
     ]);
-    SvgHelper.setAttributes(this.editingTargetRotationContainer, [
-      [
-        'transform-origin',
-        `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
-      ],
-    ]);
+    this.editingTarget.style.transformOrigin = `${this.imageWidth / 2}px ${this.imageHeight / 2}px`;
+
+    // SvgHelper.setAttributes(this.editingTargetRotationContainer, [
+    //   [
+    //     'transform-origin',
+    //     `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
+    //   ],
+    // ]);
   }
 
   private resize(newWidth: number, newHeight: number) {
@@ -596,33 +599,42 @@ export class CropArea {
 
     this.editingTarget = SvgHelper.createImage([
       ['href', ''],
-      [
-        'transform-origin',
-        `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
-      ],
+      // [
+      //   'transform-origin',
+      //   `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
+      // ],
     ]);
-    const flip = SvgHelper.createTransform();
-    this.editingTarget.transform.baseVal.appendItem(flip);
+    this.editingTarget.style.transformOrigin = `${this.imageWidth / 2}px ${this.imageHeight / 2}px`;
+    // const flip = SvgHelper.createTransform();
+    // this.editingTarget.transform.baseVal.appendItem(flip);
 
     this.editingTargetRotationContainer = SvgHelper.createGroup([
-      [
-        'transform-origin',
-        `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
-      ],
+      // [
+      //   'transform-origin',
+      //   `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
+      // ]
     ]);
-    this.editingTargetRotationContainer.appendChild(this.editingTarget);
+    this.editingTargetRotationScaleContainer = SvgHelper.createGroup([
+      // [
+      //   'transform-origin',
+      //   `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
+      // ]
+    ]);
+    this.editingTargetRotationScaleContainer.appendChild(this.editingTarget);
+    this.editingTargetRotationContainer.appendChild(this.editingTargetRotationScaleContainer);
 
     const rotate = SvgHelper.createTransform();
     this.editingTargetRotationContainer.transform.baseVal.appendItem(rotate);
     const scale = SvgHelper.createTransform();
-    this.editingTargetRotationContainer.transform.baseVal.appendItem(scale);
+    this.editingTargetRotationScaleContainer.transform.baseVal.appendItem(scale);
 
     this.editingTargetContainer = SvgHelper.createGroup();
-    const zoomTranslate = SvgHelper.createTransform();
-    zoomTranslate.setTranslate(this.CANVAS_MARGIN, this.CANVAS_MARGIN);
-    this.editingTargetContainer.transform.baseVal.appendItem(zoomTranslate);
-    const zoomScale = SvgHelper.createTransform();
-    this.editingTargetContainer.transform.baseVal.appendItem(zoomScale);
+    this.editingTargetContainer.style.transform = `translate(${this.CANVAS_MARGIN}px, ${this.CANVAS_MARGIN}px)`;
+    // const zoomTranslate = SvgHelper.createTransform();
+    // zoomTranslate.setTranslate(this.CANVAS_MARGIN, this.CANVAS_MARGIN);
+    // this.editingTargetContainer.transform.baseVal.appendItem(zoomTranslate);
+    // const zoomScale = SvgHelper.createTransform();
+    // this.editingTargetContainer.transform.baseVal.appendItem(zoomScale);
 
     this.editingTargetContainer.appendChild(
       this.editingTargetRotationContainer
@@ -685,22 +697,26 @@ export class CropArea {
       );
 
       if (this.editingTargetContainer && this.cropLayer) {
-        SvgHelper.setAttributes(this.editingTargetContainer, [
-          ['transform-origin', `${zoomCenterX}px ${zoomCenterY}px`],
-        ]);
+        this.editingTargetContainer.style.transformOrigin = `${zoomCenterX}px ${zoomCenterY}px`;
+        // SvgHelper.setAttributes(this.editingTargetContainer, [
+        //   ['transform-origin', `${zoomCenterX}px ${zoomCenterY}px`],
+        // ]);
 
-        const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
-          0
-        );
-        zoomTranslate.setTranslate(
-          this.imageWidth / 2 - zoomCenterX + this.CANVAS_MARGIN,
-          this.imageHeight / 2 - zoomCenterY + this.CANVAS_MARGIN
-        );
-        this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
+        this.editingTargetContainer.style.transform = `translate(${this.imageWidth / 2 
+          - zoomCenterX + this.CANVAS_MARGIN}px,${this.imageHeight / 2 
+            - zoomCenterY + this.CANVAS_MARGIN}px) scale(${this.zoomFactor})`;
+        // const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
+        //   0
+        // );
+        // zoomTranslate.setTranslate(
+        //   this.imageWidth / 2 - zoomCenterX + this.CANVAS_MARGIN,
+        //   this.imageHeight / 2 - zoomCenterY + this.CANVAS_MARGIN
+        // );
+        // this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
 
-        const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
-        zoomScale.setScale(this.zoomFactor, this.zoomFactor);
-        this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
+        // const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
+        // zoomScale.setScale(this.zoomFactor, this.zoomFactor);
+        // this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
 
         this.cropLayer.zoomFactor = this.zoomFactor;
       }
@@ -710,18 +726,21 @@ export class CropArea {
   private unzoomFromCrop() {
     this.zoomFactor = 1;
     if (this.editingTargetContainer && this.cropLayer) {
-      SvgHelper.setAttributes(this.editingTargetContainer, [
-        ['transform-origin', `center`],
-      ]);
-      const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
-        0
-      );
-      zoomTranslate.setTranslate(this.CANVAS_MARGIN, this.CANVAS_MARGIN);
-      this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
+      this.editingTargetContainer.style.transformOrigin = 'center';
+      // SvgHelper.setAttributes(this.editingTargetContainer, [
+      //   ['transform-origin', `center`],
+      // ]);
 
-      const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
-      zoomScale.setScale(1, 1);
-      this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
+      this.editingTargetContainer.style.transform = `translate(${this.CANVAS_MARGIN}px, ${this.CANVAS_MARGIN}px) scale(1)`;
+      // const zoomTranslate = this.editingTargetContainer.transform.baseVal.getItem(
+      //   0
+      // );
+      // zoomTranslate.setTranslate(this.CANVAS_MARGIN, this.CANVAS_MARGIN);
+      // this.editingTargetContainer.transform.baseVal.replaceItem(zoomTranslate, 0);
+
+      // const zoomScale = this.editingTargetContainer.transform.baseVal.getItem(1);
+      // zoomScale.setScale(1, 1);
+      // this.editingTargetContainer.transform.baseVal.replaceItem(zoomScale, 1);
 
       this.cropLayer.zoomFactor = this.zoomFactor;
     }
@@ -1130,8 +1149,6 @@ export class CropArea {
       this.applyFlip();
       this.rotationAngle = state.rotationAngle;
       this.applyRotation();
-      // @todo
-      // this.scaleMarkers(this.imageWidth / state.width, this.imageHeight / state.height);
     }
   }
 
@@ -1206,16 +1223,19 @@ export class CropArea {
     // scale to original for accurate measuring
     const ztcCurrent = this.zoomToCropEnabled;
     this.zoomToCropEnabled = false;
-    const scale = this.editingTargetRotationContainer.transform.baseVal.getItem(
-      1
-    );
-    scale.setScale(1, 1);
-    this.editingTargetRotationContainer.transform.baseVal.replaceItem(scale, 1);
+
+    this.editingTargetRotationScaleContainer.style.transformOrigin = 'center';
+    this.editingTargetRotationScaleContainer.style.transform = 'scale(1)';
+    // const scale = this.editingTargetRotationScaleContainer.transform.baseVal.getItem(
+    //   0
+    // );
+    // scale.setScale(1, 1);
+    // this.editingTargetRotationScaleContainer.transform.baseVal.replaceItem(scale, 0);
 
     const rotate = this.editingTargetRotationContainer.transform.baseVal.getItem(
       0
     );
-    rotate.setRotate(this.rotationAngle, 0, 0);
+    rotate.setRotate(this.rotationAngle, this.imageWidth / 2, this.imageHeight / 2);
     this.editingTargetRotationContainer.transform.baseVal.replaceItem(
       rotate,
       0
@@ -1227,8 +1247,9 @@ export class CropArea {
       this.imageWidth / boundingBox.width,
       this.imageHeight / boundingBox.height
     );
-    scale.setScale(scaleFactor, scaleFactor);
-    this.editingTargetRotationContainer.transform.baseVal.replaceItem(scale, 1);
+    this.editingTargetRotationScaleContainer.style.transform = `scale(${scaleFactor})`;
+    // scale.setScale(scaleFactor, scaleFactor);
+    // this.editingTargetRotationScaleContainer.transform.baseVal.replaceItem(scale, 0);
 
     this.zoomToCropEnabled = ztcCurrent;
   }
@@ -1244,12 +1265,14 @@ export class CropArea {
   }
 
   private applyFlip() {
-    const flip = this.editingTarget.transform.baseVal.getItem(0);
-    flip.setScale(
-      this.flippedHorizontally ? -1 : 1,
-      this.flippedVertically ? -1 : 1
-    );
-    this.editingTarget.transform.baseVal.replaceItem(flip, 0);
+    this.editingTarget.style.transform = `scale(${
+      this.flippedHorizontally ? -1 : 1},${this.flippedVertically ? -1 : 1})`;
+    // const flip = this.editingTarget.transform.baseVal.getItem(0);
+    // flip.setScale(
+    //   this.flippedHorizontally ? -1 : 1,
+    //   this.flippedVertically ? -1 : 1
+    // );
+    // this.editingTarget.transform.baseVal.replaceItem(flip, 0);
   }
 
   /**
