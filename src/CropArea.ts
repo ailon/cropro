@@ -938,6 +938,7 @@ export class CropArea {
       const logoButton = document.createElement('div');
       logoButton.className = `${this.topToolbar.buttonClassName} ${this.topToolbar.buttonColorsClassName}`;
       const logoLink = document.createElement('a');
+      logoLink.style.color = 'currentColor';
       logoLink.href = 'https://markerjs.com/products/cropro';
       logoLink.target = '_blank';
       logoLink.innerHTML = LogoIcon;
@@ -1338,7 +1339,8 @@ export class CropArea {
       new StyleClass(
         'toolbar_button_colors',
         `
-      fill: ${this.styles.settings.toolbarColor};
+      color: ${this.styles.settings.toolbarColor};
+      fill: currentColor;
     `
       )
     );
@@ -1347,7 +1349,8 @@ export class CropArea {
       new StyleClass(
         'toolbar_active_button',
         `
-      fill: ${this.styles.settings.toolbarColor};
+      color: ${this.styles.settings.toolbarColor};
+      fill: currentColor;
       background-color: ${this.styles.settings.toolbarBackgroundActiveColor}
     `
       )
@@ -1426,7 +1429,8 @@ export class CropArea {
       new StyleClass(
         'toolbar_straightener_colors',
         `
-      fill: ${this.styles.settings.toolbarColor};
+      color: ${this.styles.settings.toolbarColor};
+      fill: currentColor;
     `
       )
     );
