@@ -65,6 +65,7 @@ export class StraightenControl {
     this.title = title;
     this.uiContainer = document.createElement('div');
 
+    this.getUI = this.getUI.bind(this);
     this.onPointerDown = this.onPointerDown.bind(this);
     this.onPointerMove = this.onPointerMove.bind(this);
     this.onPointerUp = this.onPointerUp.bind(this);
@@ -84,11 +85,12 @@ export class StraightenControl {
     this.controlContainer.appendChild(this.getVisual());
 
     this.controlContainer.addEventListener('pointerdown', this.onPointerDown);
-    window.addEventListener('pointermove', this.onPointerMove);
-    window.addEventListener('pointerup', this.onPointerUp);
+    this.controlContainer.addEventListener('pointermove', this.onPointerMove);
+    this.controlContainer.addEventListener('pointerup', this.onPointerUp);
 
     this.uiContainer.appendChild(this.controlContainer);
     this.uiContainer.style.display = 'inline-block';
+    this.uiContainer.style.touchAction = 'none';
 
     this.setAngleLabel();
     this.positionScaleShape();
@@ -97,6 +99,7 @@ export class StraightenControl {
   }
 
   private onPointerDown(ev: PointerEvent) {
+    this.controlContainer.setPointerCapture(ev.pointerId);
     this.isDragging = true;
     this.previousPoint = { x: ev.clientX, y: ev.clientY };
   }
@@ -113,6 +116,7 @@ export class StraightenControl {
       this.onAngleChange((ev.clientX - this.previousPoint.x) / 5);
     }
     this.isDragging = false;
+    this.controlContainer.releasePointerCapture(ev.pointerId);
   }
 
   private setAngleLabel() {

@@ -292,9 +292,10 @@ export class CropLayer {
   }
 
   private attachEvents() {
+    this.container.style.touchAction = 'none';
     this.container.addEventListener('pointerdown', this.onPointerDown);
-    window.addEventListener('pointermove', this.onPointerMove);
-    window.addEventListener('pointerup', this.onPointerUp);
+    this.container.addEventListener('pointermove', this.onPointerMove);
+    this.container.addEventListener('pointerup', this.onPointerUp);
   }
 
   private clientToLocalCoordinates(x: number, y: number): IPoint {
@@ -306,6 +307,7 @@ export class CropLayer {
   }
 
   private onPointerDown(ev: PointerEvent) {
+    this.container.setPointerCapture(ev.pointerId);
     this.previousPoint = this.clientToLocalCoordinates(ev.clientX, ev.clientY);
     if (this.cropRectElement === ev.target) {
       this.isMoving = true;
@@ -334,6 +336,7 @@ export class CropLayer {
   private onPointerUp(ev: PointerEvent) {
     this.activeGrip = undefined;
     this.isMoving = false;
+    this.container.releasePointerCapture(ev.pointerId);
   }
 
   private move(point: IPoint): void {
