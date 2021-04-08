@@ -495,7 +495,17 @@ export class CropArea {
     }px`;
     SvgHelper.setAttributes(this.editingTarget, [
       ['width', `${this.imageWidth}`],
-      ['height', `${this.imageHeight}`]
+      ['height', `${this.imageHeight}`],
+      [
+        'transform-origin',
+        `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
+      ]
+    ]);
+    SvgHelper.setAttributes(this.editingTargetRotationContainer, [
+      [
+        'transform-origin',
+        `${this.imageWidth / 2}px ${this.imageHeight / 2}px`,
+      ],
     ]);
   }
 
