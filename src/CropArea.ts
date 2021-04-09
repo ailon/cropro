@@ -526,6 +526,7 @@ export class CropArea {
     }
 
     this.cropLayer.scaleCanvas(this.imageWidth, this.imageHeight);
+    this.applyRotation();
   }
 
   private setEditingTarget() {
