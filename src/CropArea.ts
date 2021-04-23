@@ -1166,7 +1166,8 @@ export class CropArea {
     const ztcCurrent = this.zoomToCropEnabled;
     this.zoomToCropEnabled = false;
 
-    this.editingTargetRotationScaleContainer.style.transformOrigin = 'center';
+    //this.editingTargetRotationScaleContainer.style.transformOrigin = 'center';
+    this.editingTargetRotationScaleContainer.style.transformOrigin = `${this.imageWidth / 2}px ${this.imageHeight / 2}px`;
     this.editingTargetRotationScaleContainer.style.transform = 'scale(1)';
 
     const rotate = this.editingTargetRotationContainer.transform.baseVal.getItem(
