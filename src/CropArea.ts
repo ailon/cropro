@@ -468,17 +468,19 @@ export class CropArea {
   }
 
   private onPopupResize() {
-    const ratio = (1.0 * this.target.clientWidth) / this.target.clientHeight;
-    const newWidth =
-      this.contentDiv.clientWidth / ratio > this.contentDiv.clientHeight
-        ? (this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2) * ratio
-        : this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2;
-    const newHeight =
-      newWidth + this.CANVAS_MARGIN * 2 < this.contentDiv.clientWidth
-        ? this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2
-        : (this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2) / ratio;
+    if (this.contentDiv.clientWidth > 0 && this.contentDiv.clientHeight > 0) {
+      const ratio = (1.0 * this.target.clientWidth) / this.target.clientHeight;
+      const newWidth =
+        this.contentDiv.clientWidth / ratio > this.contentDiv.clientHeight
+          ? (this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2) * ratio
+          : this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2;
+      const newHeight =
+        newWidth + this.CANVAS_MARGIN * 2 < this.contentDiv.clientWidth
+          ? this.contentDiv.clientHeight - this.CANVAS_MARGIN * 2
+          : (this.contentDiv.clientWidth - this.CANVAS_MARGIN * 2) / ratio;
 
-    this.resize(newWidth, newHeight);
+      this.resize(newWidth, newHeight);
+    }
   }
 
   private setWindowHeight() {
