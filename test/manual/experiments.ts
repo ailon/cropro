@@ -44,7 +44,8 @@ export class Experiments {
       res.src = dataUrl;
       document.body.appendChild(res);
       this.savedState = state;
-    })
+    });
+    this.ca.addCloseEventListener(() => console.log('close'));
     this.ca.show();
     if (this.savedState) {
       this.ca.restoreState(this.savedState);
