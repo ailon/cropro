@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2020-05-10
+### Fixed
+- cropped image wasn't rendered in Safari on the first try
+
 ## [1.0.4] - 2020-04-23
 ### Fixed
 - negative width/height exceptions when closing a popup
@@ -37,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial public release.
 
+[1.0.5]: https://github.com/ailon/cropro/releases/tag/v1.0.5
 [1.0.4]: https://github.com/ailon/cropro/releases/tag/v1.0.4
 [1.0.3]: https://github.com/ailon/cropro/releases/tag/v1.0.3
 [1.0.2]: https://github.com/ailon/cropro/releases/tag/v1.0.2
