@@ -377,7 +377,7 @@ export class CropArea {
   /**
    * Closes the CropArea UI.
    */
-  public close(): void {
+  public close(isRendering = false): void {
     if (this.isOpen) {
       if (this.coverDiv) {
         this.closeUI();
@@ -388,7 +388,9 @@ export class CropArea {
       if (this.displayMode === 'popup') {
         window.removeEventListener('resize', this.setWindowHeight);
       }
-      this.closeEventListeners.forEach((listener) => listener());
+      if (!isRendering) {
+        this.closeEventListeners.forEach((listener) => listener());
+      }
       this._isOpen = false;
     }
   }
@@ -929,7 +931,7 @@ export class CropArea {
       okButton.colorsClassName = this.styles.settings.toolbarOkButtonStyleColorsClassName;
     }
     const closeButton = new ToolbarButton(CloseIcon, 'Close');
-    closeButton.onClick = this.closeUI;
+    closeButton.onClick = this.close;
     actionBlock.addButton(closeButton);
     if (this.styles.settings.toolbarCloseButtonStyleColorsClassName) {
       closeButton.colorsClassName = this.styles.settings.toolbarCloseButtonStyleColorsClassName;
@@ -1214,7 +1216,7 @@ export class CropArea {
     const result = await this.render();
     const state = this.getState();
     this.renderEventListeners.forEach((listener) => listener(result, state));
-    this.close();
+    this.close(true);
   }
 
   private async render(): Promise<string> {
