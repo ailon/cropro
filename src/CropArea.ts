@@ -1228,6 +1228,19 @@ export class CropArea {
     this.unzoomFromCrop();
     SvgHelper.setAttributes(this.cropLayerContainer, [['display', 'none']]);
 
+    // workaround for Safari (doesn't render on the first call in Safari)
+    await renderer.rasterize(
+      this.cropImage,
+      this.target,
+      {
+        x: this.cropRect.x,
+        y: this.cropRect.y,
+        width: this.cropRect.width,
+        height: this.cropRect.height,
+      },
+      this.CANVAS_MARGIN
+    );
+
     return await renderer.rasterize(
       this.cropImage,
       this.target,
