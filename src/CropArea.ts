@@ -362,6 +362,9 @@ export class CropArea {
     this.initCropLayer();
     this.attachEvents();
     this.applyAspectRatio();
+    if (this.displayMode === 'popup') {
+      this.onPopupResize();
+    }    
 
     this._isOpen = true;
   }
@@ -468,8 +471,8 @@ export class CropArea {
       if (window.ResizeObserver) {
         this.targetObserver = new ResizeObserver(this.onPopupResize);
         this.targetObserver.observe(this.contentDiv);
-        window.addEventListener('resize', this.setWindowHeight);
       }
+      window.addEventListener('resize', this.setWindowHeight);
     }
   }
 
