@@ -301,8 +301,8 @@ export class CropLayer {
   private clientToLocalCoordinates(x: number, y: number): IPoint {
     const clientRect = this.container.getBoundingClientRect();
     return {
-      x: x - clientRect.x + this.margin,
-      y: y - clientRect.y + this.margin,
+      x: x - clientRect.left + this.margin,
+      y: y - clientRect.top + this.margin,
     };
   }
 

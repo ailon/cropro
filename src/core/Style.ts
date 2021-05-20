@@ -91,7 +91,11 @@ export class StyleManager {
       this.addStyleSheet();
     }
     this.rules.push(styleRule);
-    this.styleSheet.sheet.addRule(styleRule.selector, styleRule.style);
+    // this.styleSheet.sheet.addRule(styleRule.selector, styleRule.style); // crashes in legacy Edge
+    this.styleSheet.sheet.insertRule(
+      `${styleRule.selector} {${styleRule.style}}`,
+      this.styleSheet.sheet.rules.length
+    );
   }
 
   private addStyleSheet() {

@@ -458,14 +458,18 @@ export class CropArea {
 
   private setupResizeObserver() {
     if (this.displayMode === 'inline') {
-      this.targetObserver = new ResizeObserver(() => {
-        this.resize(this.target.clientWidth, this.target.clientHeight);
-      });
-      this.targetObserver.observe(this.target);
+      if (window.ResizeObserver) {
+        this.targetObserver = new ResizeObserver(() => {
+          this.resize(this.target.clientWidth, this.target.clientHeight);
+        });
+        this.targetObserver.observe(this.target);
+      }
     } else if (this.displayMode === 'popup') {
-      this.targetObserver = new ResizeObserver(this.onPopupResize);
-      this.targetObserver.observe(this.contentDiv);
-      window.addEventListener('resize', this.setWindowHeight);
+      if (window.ResizeObserver) {
+        this.targetObserver = new ResizeObserver(this.onPopupResize);
+        this.targetObserver.observe(this.contentDiv);
+        window.addEventListener('resize', this.setWindowHeight);
+      }
     }
   }
 
@@ -1098,7 +1102,7 @@ export class CropArea {
 
   private clientToLocalCoordinates(x: number, y: number): IPoint {
     const clientRect = this.cropImage.getBoundingClientRect();
-    return { x: x - clientRect.x, y: y - clientRect.y };
+    return { x: x - clientRect.left, y: y - clientRect.top };
   }
 
   private onWindowResize() {
