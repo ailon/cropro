@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2020-05-21
+### Fixed
+- note working in "legacy" Microsoft Edge (won't be officially supported going forward)
+
 ## [1.0.6] - 2020-05-10
 ### Fixed
 - cropped image wasn't rendered in Safari on the first try
