@@ -6,11 +6,16 @@ import { IStyleSettings } from './IStyleSettings';
 export class StyleManager {
 
   private _classNamePrefix = '__cropro_';
+  private _coverClassName = 'cropro_cover';
   /**
    * Prefix used for all internally created CSS classes.
    */
   public get classNamePrefix(): string {
     return this._classNamePrefix;
+  }
+
+  public get coverClassName(): string {
+    return this._coverClassName;
   }
 
   private classes: StyleClass[] = [];
