@@ -165,6 +165,8 @@ export class CropArea {
     }
   }
 
+  private scaleFactor = 1.0;
+
   private toolbarStyleClass: StyleClass;
   private toolbarStyleColorsClass: StyleClass;
   private toolbarBlockStyleClass: StyleClass;
@@ -1190,11 +1192,11 @@ export class CropArea {
 
     // measure and rescale to fit
     const boundingBox = this.editingTarget.getBoundingClientRect();
-    const scaleFactor = Math.min(
+    this.scaleFactor = Math.min(
       this.imageWidth / boundingBox.width,
       this.imageHeight / boundingBox.height
     );
-    this.editingTargetRotationScaleContainer.style.transform = `scale(${scaleFactor})`;
+    this.editingTargetRotationScaleContainer.style.transform = `scale(${this.scaleFactor})`;
 
     this.zoomToCropEnabled = ztcCurrent;
   }
@@ -1247,7 +1249,10 @@ export class CropArea {
         width: this.cropRect.width,
         height: this.cropRect.height,
       },
-      this.CANVAS_MARGIN
+      this.CANVAS_MARGIN,
+      this.rotationAngle,
+      this.scaleFactor * (this.flippedHorizontally ? -1 : 1),
+      this.scaleFactor * (this.flippedVertically ? -1 : 1)
     );
 
     return await renderer.rasterize(
@@ -1259,7 +1264,10 @@ export class CropArea {
         width: this.cropRect.width,
         height: this.cropRect.height,
       },
-      this.CANVAS_MARGIN
+      this.CANVAS_MARGIN,
+      this.rotationAngle,
+      this.scaleFactor * (this.flippedHorizontally ? -1 : 1),
+      this.scaleFactor * (this.flippedVertically ? -1 : 1)
     );
   }
 
