@@ -5,7 +5,15 @@ import { IStyleSettings } from './IStyleSettings';
  */
 export class StyleManager {
 
-  private _classNamePrefix = '__cropro_';
+  private _classNamePrefixBase = '__cropro_';
+  /**
+   * Static CSS class name used for the wrapper element.
+   */
+   public get classNamePrefixBase(): string {
+    return this._classNamePrefixBase;
+  }
+
+  private _classNamePrefix: string;
   /**
    * Prefix used for all internally created CSS classes.
    */
@@ -65,7 +73,7 @@ export class StyleManager {
    * @param instanceNo - instance id.
    */
   constructor(instanceNo: number) {
-    this._classNamePrefix = `${this._classNamePrefix}_${instanceNo}_`;
+    this._classNamePrefix = `${this._classNamePrefixBase}_${instanceNo}_`;
   }
 
   /**

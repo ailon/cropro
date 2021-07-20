@@ -736,7 +736,7 @@ export class CropArea {
 
     this.coverDiv = document.createElement('div');
 
-    this.coverDiv.className = this.styles.classNamePrefix;
+    this.coverDiv.className = `${this.styles.classNamePrefixBase} ${this.styles.classNamePrefix}`;
 
     // hardcode font size so nothing inside is affected by higher up settings
     this.coverDiv.style.fontSize = '16px';
