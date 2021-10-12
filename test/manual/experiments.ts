@@ -30,7 +30,7 @@ export class Experiments {
     // ca.isGridVisible = false;
     // ca.displayMode = 'popup';
 
-    // ca.renderAtNaturalSize = true;
+    this.ca.renderAtNaturalSize = true;
     // ca.renderWidth = 640;
     // ca.renderHeight = 480;
     this.ca.renderImageType = 'image/jpeg';

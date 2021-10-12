@@ -61,14 +61,14 @@ export class Renderer {
       if (this.naturalSize === true) {
         // scale to full image size
         xScale =
-          original.naturalWidth / (cropImage.width.baseVal.value - margin * 2);
+          original.naturalWidth / (cropImage.width.baseVal.value - margin * 2) / scaleFactorX;
         yScale =
           original.naturalHeight /
-          (cropImage.height.baseVal.value - margin * 2);
+          (cropImage.height.baseVal.value - margin * 2) / scaleFactorY;
         canvas.width =
-          original.naturalWidth;
+          original.naturalWidth / scaleFactorX;
         canvas.height =
-          original.naturalHeight;
+          original.naturalHeight / scaleFactorY;
       } else if (this.width !== undefined && this.height !== undefined) {
         // scale to specific dimensions
         xScale = this.width / cropRectangle.width;
