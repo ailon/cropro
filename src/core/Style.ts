@@ -86,7 +86,11 @@ export class StyleManager {
     }
     styleClass.name = `${this.classNamePrefix}${styleClass.localName}`;
     this.classes.push(styleClass);
-    this.styleSheet.sheet.addRule('.' + styleClass.name, styleClass.style);
+    // this.styleSheet.sheet.addRule('.' + styleClass.name, styleClass.style);
+    this.styleSheet.sheet.insertRule(
+      `.${styleClass.name} {${styleClass.style}}`,
+      this.styleSheet.sheet.cssRules.length
+    );
     return styleClass;
   }
 
@@ -102,7 +106,7 @@ export class StyleManager {
     // this.styleSheet.sheet.addRule(styleRule.selector, styleRule.style); // crashes in legacy Edge
     this.styleSheet.sheet.insertRule(
       `${styleRule.selector} {${styleRule.style}}`,
-      this.styleSheet.sheet.rules.length
+      this.styleSheet.sheet.cssRules.length
     );
   }
 
