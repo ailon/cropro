@@ -10,6 +10,8 @@ export class Experiments {
     // ca.isGridVisible = false;
     this.ca.displayMode = 'popup';
 
+    this.ca.styles.settings.zIndex = '2000';
+
     // this.ca.renderAtNaturalSize = true;
     // ca.renderWidth = 640;
     // ca.renderHeight = 480;
@@ -34,6 +36,8 @@ export class Experiments {
     // ca.renderWidth = 640;
     // ca.renderHeight = 480;
     this.ca.renderImageType = 'image/jpeg';
+
+    this.ca.styles.settings.zIndex = '2000';
 
     // this.ca.styles.settings.hideTopToolbar = true;
     // this.ca.styles.settings.hideBottomToolbar = true;

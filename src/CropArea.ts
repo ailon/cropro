@@ -758,7 +758,10 @@ export class CropArea {
           this.target.offsetWidth + this.CANVAS_MARGIN
         }px`;
         // this.coverDiv.style.height = `${this.target.offsetHeight + this.CANVAS_MARGIN}px`;
-        this.coverDiv.style.zIndex = '5';
+        this.coverDiv.style.zIndex =
+          this.styles.settings.zIndex !== undefined
+            ? this.styles.settings.zIndex
+            : '5';        
         // flex causes the ui to stretch when toolbox has wider nowrap panels
         //this.coverDiv.style.display = 'flex';
         break;
@@ -770,7 +773,10 @@ export class CropArea {
         this.coverDiv.style.width = '100vw';
         this.coverDiv.style.height = `${window.innerHeight}px`;
         this.coverDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
-        this.coverDiv.style.zIndex = '1000';
+        this.coverDiv.style.zIndex =
+          this.styles.settings.zIndex !== undefined
+            ? this.styles.settings.zIndex
+            : '1000';        
         this.coverDiv.style.display = 'flex';
         // this.coverDiv.style.overflow = 'auto';
       }

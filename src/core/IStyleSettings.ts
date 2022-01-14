@@ -97,4 +97,13 @@ export interface IStyleSettings {
    * If set to true, the bottom toolbar is hidden.
    */
   hideBottomToolbar?: boolean;
+
+  /**
+   * zIndex for the CROPRO UI.
+   * 
+   * Defaults to 5 in inline mode and 1000 in popup mode.
+   * 
+   * @since 1.2.0
+   */
+   zIndex?: string;  
 }
