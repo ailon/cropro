@@ -111,6 +111,9 @@ export class CropArea {
   }
   public set zoomToCropEnabled(value: boolean) {
     this._zoomToCropEnabled = value;
+    if (this.cropLayer !== undefined) {
+      this.cropLayer.zoomToCropEnabled = this._zoomToCropEnabled;
+    }
     if (value) {
       this.zoomToCrop();
     } else {
@@ -656,6 +659,7 @@ export class CropArea {
     this.cropLayer.cropFrameColor = this.styles.settings.cropFrameColor;
     this.cropLayer.gripColor = this.styles.settings.gripColor;
     this.cropLayer.gripFillColor = this.styles.settings.gripFillColor;
+    this.cropLayer.zoomToCropEnabled = this.zoomToCropEnabled;
 
     this.cropLayer.open();
     this.cropLayer.setCropRectangle(this.cropRect);

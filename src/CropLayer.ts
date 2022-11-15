@@ -91,6 +91,11 @@ export class CropLayer {
     this.setCropRectangle(this.cropRect);
   }
 
+  private _zoomToCropEnabled = false;
+  public set zoomToCropEnabled(value: boolean) {
+    this._zoomToCropEnabled = value;
+  }
+
   private cropRectChanged = false;
 
   /**
@@ -211,7 +216,7 @@ export class CropLayer {
   public setCropRectangle(rect: IRect): void {
     this.cropRect = rect;
     const visibleRect = Object.assign({}, this.cropRect);
-    if (this.zoomFactor !== 1) {
+    if (this._zoomToCropEnabled) {
       visibleRect.width = this.cropRect.width * this.zoomFactor;
       visibleRect.height = this.cropRect.height * this.zoomFactor;
       visibleRect.x =
