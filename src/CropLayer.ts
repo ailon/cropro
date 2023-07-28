@@ -332,6 +332,9 @@ export class CropLayer {
       this.move(this.clientToLocalCoordinates(ev.clientX, ev.clientY));
     } else if (this.activeGrip) {
       const localPoint = this.clientToLocalCoordinates(ev.clientX, ev.clientY);
+      // console.log(`prev: (${
+      //   this.previousPoint.x}, ${
+      //     this.previousPoint.y}); local: (${localPoint.x}, ${localPoint.y})`);
       this.resize(localPoint);
     }
     ev.preventDefault();
@@ -442,8 +445,8 @@ export class CropLayer {
     if (
       newCropRect.x >= this.margin &&
       newCropRect.y >= this.margin &&
-      newCropRect.x - this.margin + newCropRect.width <= this.canvasWidth &&
-      newCropRect.y - this.margin + newCropRect.height <= this.canvasHeight
+      Math.floor(newCropRect.x - this.margin + newCropRect.width) <= Math.ceil(this.canvasWidth) &&
+      Math.floor(newCropRect.y - this.margin + newCropRect.height) <= Math.ceil(this.canvasHeight)
     ) {
       this.cropRect = newCropRect;
 
