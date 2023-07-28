@@ -1,6 +1,6 @@
 {
   "name": "cropro",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "javascript image cropping library",
   "main": "cropro.js",
   "module": "cropro.esm.js",
