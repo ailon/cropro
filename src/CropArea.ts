@@ -74,6 +74,7 @@ export class CropArea {
   private coverDiv: HTMLDivElement;
   private uiDiv: HTMLDivElement;
   private contentDiv: HTMLDivElement;
+  private processingUi: HTMLDivElement;
   private editorCanvas: HTMLDivElement;
   private editingTargetContainer: SVGGElement;
   private editingTargetRotationContainer: SVGGElement;
@@ -545,21 +546,29 @@ export class CropArea {
     this.applyRotation();
   }
 
-  private setEditingTarget() {
-    const canvas = document.createElement('canvas');
-    canvas.width = this.target.naturalWidth;
-    canvas.height = this.target.naturalHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(
-      this.target,
-      0,
-      0,
-      this.target.naturalWidth,
-      this.target.naturalHeight
-    );
-    const imgDataURL = canvas.toDataURL();
+  // not sure why initial pre-rendering of the original image was added.
+  // seems to work fine without it.
+  // 
+  // private setEditingTarget() {
+  //   const canvas = document.createElement('canvas');
+  //   canvas.width = this.target.naturalWidth;
+  //   canvas.height = this.target.naturalHeight;
+  //   const ctx = canvas.getContext('2d');
+  //   ctx.drawImage(
+  //     this.target,
+  //     0,
+  //     0,
+  //     this.target.naturalWidth,
+  //     this.target.naturalHeight
+  //   );
+  //   const imgDataURL = canvas.toDataURL();
 
-    SvgHelper.setAttributes(this.editingTarget, [['href', imgDataURL]]);
+  //   SvgHelper.setAttributes(this.editingTarget, [['href', imgDataURL]]);
+  //   this.setEditingTargetSize();
+  // }
+
+  private setEditingTarget() {
+    SvgHelper.setAttributes(this.editingTarget, [['href', this.target.src]]);
     this.setEditingTargetSize();
   }
 
@@ -833,6 +842,37 @@ export class CropArea {
     this.editorCanvas.style.pointerEvents = 'none';
     this.contentDiv.appendChild(this.editorCanvas);
 
+    this.processingUi = document.createElement('div');
+    // this.processingUi.innerText = 'processing...';
+    this.processingUi.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin: auto; background: none; display: block; shape-rendering: auto;" width="50px" height="50px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+    <rect x="19" y="19" width="20" height="20" fill="#eeeeee">
+      <animate attributeName="fill" values="#888888;#eeeeee;#eeeeee" keyTimes="0;0.125;1" dur="1s" repeatCount="indefinite" begin="0s" calcMode="discrete"></animate>
+    </rect><rect x="40" y="19" width="20" height="20" fill="#eeeeee">
+      <animate attributeName="fill" values="#888888;#eeeeee;#eeeeee" keyTimes="0;0.125;1" dur="1s" repeatCount="indefinite" begin="0.125s" calcMode="discrete"></animate>
+    </rect><rect x="61" y="19" width="20" height="20" fill="#eeeeee">
+      <animate attributeName="fill" values="#888888;#eeeeee;#eeeeee" keyTimes="0;0.125;1" dur="1s" repeatCount="indefinite" begin="0.25s" calcMode="discrete"></animate>
+    </rect><rect x="19" y="40" width="20" height="20" fill="#eeeeee">
+      <animate attributeName="fill" values="#888888;#eeeeee;#eeeeee" keyTimes="0;0.125;1" dur="1s" repeatCount="indefinite" begin="0.875s" calcMode="discrete"></animate>
+    </rect><rect x="61" y="40" width="20" height="20" fill="#eeeeee">
+      <animate attributeName="fill" values="#888888;#eeeeee;#eeeeee" keyTimes="0;0.125;1" dur="1s" repeatCount="indefinite" begin="0.375s" calcMode="discrete"></animate>
+    </rect><rect x="19" y="61" width="20" height="20" fill="#eeeeee">
+      <animate attributeName="fill" values="#888888;#eeeeee;#eeeeee" keyTimes="0;0.125;1" dur="1s" repeatCount="indefinite" begin="0.75s" calcMode="discrete"></animate>
+    </rect><rect x="40" y="61" width="20" height="20" fill="#eeeeee">
+      <animate attributeName="fill" values="#888888;#eeeeee;#eeeeee" keyTimes="0;0.125;1" dur="1s" repeatCount="indefinite" begin="0.625s" calcMode="discrete"></animate>
+    </rect><rect x="61" y="61" width="20" height="20" fill="#eeeeee">
+      <animate attributeName="fill" values="#888888;#eeeeee;#eeeeee" keyTimes="0;0.125;1" dur="1s" repeatCount="indefinite" begin="0.5s" calcMode="discrete"></animate>
+    </rect>
+    </svg>`;
+    this.processingUi.style.position = 'absolute';
+    this.processingUi.style.width = '100%';
+    this.processingUi.style.height = '100%';
+    this.processingUi.style.backgroundColor = 'rgba(0,0,0,0.3)';
+    // this.processingUi.style.display = 'flex';
+    this.processingUi.style.alignItems = 'center';
+    this.processingUi.style.justifyContent = 'center';
+    this.processingUi.style.display = 'none';
+    this.editorCanvas.appendChild(this.processingUi);
+
     this.uiDiv.appendChild(this.bottomToolbar.getUI());
 
     this.straightener.angle = this.rotationAngle;
@@ -944,7 +984,12 @@ export class CropArea {
     this.topToolbar.addButtonBlock(actionBlock);
 
     const okButton = new ToolbarButton(CheckIcon, 'OK');
-    okButton.onClick = this.startRenderAndClose;
+    okButton.onClick = () => {
+      this.processingUi.style.display = 'flex';
+      // allow the processing ui to show up by delaying rendering
+      setTimeout(this.startRenderAndClose, 100);
+    } 
+      
     actionBlock.addButton(okButton);
     if (this.styles.settings.toolbarOkButtonStyleColorsClassName) {
       okButton.colorsClassName = this.styles.settings.toolbarOkButtonStyleColorsClassName;
@@ -1265,7 +1310,7 @@ export class CropArea {
       this.scaleFactor * (this.flippedVertically ? -1 : 1)
     );
 
-    return await renderer.rasterize(
+    const result = await renderer.rasterize(
       this.cropImage,
       this.target,
       {
@@ -1279,6 +1324,9 @@ export class CropArea {
       this.scaleFactor * (this.flippedHorizontally ? -1 : 1),
       this.scaleFactor * (this.flippedVertically ? -1 : 1)
     );
+    this.processingUi.style.display = 'none';
+
+    return result;
   }
 
   private addStyles() {
