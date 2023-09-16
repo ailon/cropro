@@ -319,14 +319,14 @@ export class CropArea {
    * cropArea.uiOffsetTop = -10;
    * ```
    *
-   * @since 1.5.0
+   * @since 1.3.0
    */
   public uiOffsetTop?: number;
 
   /**
    * If set, the UI will be offset by the specefied number of pixels on the left.
    *
-   * @since 1.5.0
+   * @since 1.3.0
    */
   public uiOffsetLeft?: number;
 
