@@ -44,9 +44,9 @@ export type DisplayMode = 'inline' | 'popup';
 
 /**
  * Main CROPRO class.
- * 
+ *
  * Simple usage example:
- * 
+ *
  * ```javascript
  * let ca = new CropArea(target);
  * ca.addRenderEventListener((dataUrl, state) => {
@@ -262,7 +262,7 @@ export class CropArea {
   public renderHeight?: number;
 
   /**
-   * Display mode. 
+   * Display mode.
    * `inline` for cropping right on top of the original image,
    * `popup` for a full-screen experience.
    */
@@ -279,8 +279,8 @@ export class CropArea {
   public toolbarHeight = 40;
 
   /**
-   * Aspect ratio options. 
-   * Displayed in the aspect ratio dropdown. 
+   * Aspect ratio options.
+   * Displayed in the aspect ratio dropdown.
    * When only one option is specified the aspect ratio button is hidden.
    */
   public aspectRatios: IAspectRatio[] = [
@@ -300,9 +300,35 @@ export class CropArea {
   public set aspectRatio(value: IAspectRatio) {
     this._aspectRatio = value;
   }
-  public get aspectRatio():IAspectRatio {
+  public get aspectRatio(): IAspectRatio {
     return this._aspectRatio ?? this.aspectRatios[0];
-  } 
+  }
+
+  /**
+   * If set, the UI will be offset by the specified value.
+   *
+   * Use this if you want to control the position inside a
+   * `position: relative` parent (for example), as auto-calculation
+   * will calculate available space from the relative
+   * container and not the whole page.
+   *
+   * Common usage when used with a relatively positioned parent would be:
+   *
+   * ```typescript
+   * cropArea.targetRoot = document.getElementById('relativeParent');
+   * cropArea.uiOffsetTop = -10;
+   * ```
+   *
+   * @since 1.5.0
+   */
+  public uiOffsetTop?: number;
+
+  /**
+   * If set, the UI will be offset by the specefied number of pixels on the left.
+   *
+   * @since 1.5.0
+   */
+  public uiOffsetLeft?: number;
 
   private aspectRatioButton: DropdownToolbarButton;
 
@@ -370,7 +396,7 @@ export class CropArea {
     this.applyAspectRatio();
     if (this.displayMode === 'popup') {
       this.onPopupResize();
-    }    
+    }
 
     this._isOpen = true;
   }
@@ -513,7 +539,9 @@ export class CropArea {
       ['width', `${this.imageWidth}`],
       ['height', `${this.imageHeight}`],
     ]);
-    this.editingTarget.style.transformOrigin = `${this.imageWidth / 2}px ${this.imageHeight / 2}px`;
+    this.editingTarget.style.transformOrigin = `${this.imageWidth / 2}px ${
+      this.imageHeight / 2
+    }px`;
   }
 
   private resize(newWidth: number, newHeight: number) {
@@ -548,7 +576,7 @@ export class CropArea {
 
   // not sure why initial pre-rendering of the original image was added.
   // seems to work fine without it.
-  // 
+  //
   // private setEditingTarget() {
   //   const canvas = document.createElement('canvas');
   //   canvas.width = this.target.naturalWidth;
@@ -610,20 +638,24 @@ export class CropArea {
     this.defs = SvgHelper.createDefs();
     this.cropImage.appendChild(this.defs);
 
-    this.editingTarget = SvgHelper.createImage([
-      ['href', ''],
-    ]);
-    this.editingTarget.style.transformOrigin = `${this.imageWidth / 2}px ${this.imageHeight / 2}px`;
+    this.editingTarget = SvgHelper.createImage([['href', '']]);
+    this.editingTarget.style.transformOrigin = `${this.imageWidth / 2}px ${
+      this.imageHeight / 2
+    }px`;
 
     this.editingTargetRotationContainer = SvgHelper.createGroup();
     this.editingTargetRotationScaleContainer = SvgHelper.createGroup();
     this.editingTargetRotationScaleContainer.appendChild(this.editingTarget);
-    this.editingTargetRotationContainer.appendChild(this.editingTargetRotationScaleContainer);
+    this.editingTargetRotationContainer.appendChild(
+      this.editingTargetRotationScaleContainer
+    );
 
     const rotate = SvgHelper.createTransform();
     this.editingTargetRotationContainer.transform.baseVal.appendItem(rotate);
     const scale = SvgHelper.createTransform();
-    this.editingTargetRotationScaleContainer.transform.baseVal.appendItem(scale);
+    this.editingTargetRotationScaleContainer.transform.baseVal.appendItem(
+      scale
+    );
 
     this.editingTargetContainer = SvgHelper.createGroup();
     this.editingTargetContainer.style.transform = `translate(${this.CANVAS_MARGIN}px, ${this.CANVAS_MARGIN}px)`;
@@ -692,9 +724,11 @@ export class CropArea {
       if (this.editingTargetContainer && this.cropLayer) {
         this.editingTargetContainer.style.transformOrigin = `${zoomCenterX}px ${zoomCenterY}px`;
 
-        this.editingTargetContainer.style.transform = `translate(${this.imageWidth / 2 
-          - zoomCenterX + this.CANVAS_MARGIN}px,${this.imageHeight / 2 
-            - zoomCenterY + this.CANVAS_MARGIN}px) scale(${this.zoomFactor})`;
+        this.editingTargetContainer.style.transform = `translate(${
+          this.imageWidth / 2 - zoomCenterX + this.CANVAS_MARGIN
+        }px,${
+          this.imageHeight / 2 - zoomCenterY + this.CANVAS_MARGIN
+        }px) scale(${this.zoomFactor})`;
 
         this.cropLayer.zoomFactor = this.zoomFactor;
       }
@@ -756,17 +790,21 @@ export class CropArea {
     switch (this.displayMode) {
       case 'inline': {
         this.coverDiv.style.position = 'absolute';
-        const toolbarOffset = this.styles.settings.hideTopToolbar ? 0 : this.toolbarHeight;
-        const coverTop =
+        const toolbarOffset = this.styles.settings.hideTopToolbar
+          ? 0
+          : this.toolbarHeight;
+        let coverTop =
           this.target.offsetTop > toolbarOffset + this.CANVAS_MARGIN
             ? this.target.offsetTop - (toolbarOffset + this.CANVAS_MARGIN)
             : 0;
-        this.coverDiv.style.top = `${coverTop}px`;
-        this.coverDiv.style.left = `${
+        coverTop += this.uiOffsetTop ?? 0;
+        let coverLeft =
           this.target.offsetLeft > this.CANVAS_MARGIN
             ? this.target.offsetLeft - this.CANVAS_MARGIN
-            : 0
-        }px`;
+            : 0;
+        coverLeft += this.uiOffsetLeft ?? 0;
+        this.coverDiv.style.top = `${coverTop}px`;
+        this.coverDiv.style.left = `${coverLeft}px`;
         this.coverDiv.style.width = `${
           this.target.offsetWidth + this.CANVAS_MARGIN
         }px`;
@@ -774,7 +812,7 @@ export class CropArea {
         this.coverDiv.style.zIndex =
           this.styles.settings.zIndex !== undefined
             ? this.styles.settings.zIndex
-            : '5';        
+            : '5';
         // flex causes the ui to stretch when toolbox has wider nowrap panels
         //this.coverDiv.style.display = 'flex';
         break;
@@ -789,7 +827,7 @@ export class CropArea {
         this.coverDiv.style.zIndex =
           this.styles.settings.zIndex !== undefined
             ? this.styles.settings.zIndex
-            : '1000';        
+            : '1000';
         this.coverDiv.style.display = 'flex';
         // this.coverDiv.style.overflow = 'auto';
       }
@@ -988,8 +1026,8 @@ export class CropArea {
       this.processingUi.style.display = 'flex';
       // allow the processing ui to show up by delaying rendering
       setTimeout(this.startRenderAndClose, 100);
-    } 
-      
+    };
+
     actionBlock.addButton(okButton);
     if (this.styles.settings.toolbarOkButtonStyleColorsClassName) {
       okButton.colorsClassName = this.styles.settings.toolbarOkButtonStyleColorsClassName;
@@ -1004,7 +1042,9 @@ export class CropArea {
 
   private addBottomToolbar() {
     this.bottomToolbar = new Toolbar();
-    this.bottomToolbar.display = this.styles.settings.hideBottomToolbar ? 'none' : '';    
+    this.bottomToolbar.display = this.styles.settings.hideBottomToolbar
+      ? 'none'
+      : '';
     this.bottomToolbar.className = this.toolbarStyleClass.name;
     this.bottomToolbar.colorsClassName = this.styles.settings
       .toolbarStyleColorsClassName
@@ -1233,13 +1273,19 @@ export class CropArea {
     this.zoomToCropEnabled = false;
 
     //this.editingTargetRotationScaleContainer.style.transformOrigin = 'center';
-    this.editingTargetRotationScaleContainer.style.transformOrigin = `${this.imageWidth / 2}px ${this.imageHeight / 2}px`;
+    this.editingTargetRotationScaleContainer.style.transformOrigin = `${
+      this.imageWidth / 2
+    }px ${this.imageHeight / 2}px`;
     this.editingTargetRotationScaleContainer.style.transform = 'scale(1)';
 
     const rotate = this.editingTargetRotationContainer.transform.baseVal.getItem(
       0
     );
-    rotate.setRotate(this.rotationAngle, this.imageWidth / 2, this.imageHeight / 2);
+    rotate.setRotate(
+      this.rotationAngle,
+      this.imageWidth / 2,
+      this.imageHeight / 2
+    );
     this.editingTargetRotationContainer.transform.baseVal.replaceItem(
       rotate,
       0
@@ -1268,7 +1314,8 @@ export class CropArea {
 
   private applyFlip() {
     this.editingTarget.style.transform = `scale(${
-      this.flippedHorizontally ? -1 : 1},${this.flippedVertically ? -1 : 1})`;
+      this.flippedHorizontally ? -1 : 1
+    },${this.flippedVertically ? -1 : 1})`;
   }
 
   /**
