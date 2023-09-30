@@ -382,6 +382,7 @@ export class CropArea {
     this.render = this.render.bind(this);
     this.onPopupResize = this.onPopupResize.bind(this);
     this.applyAspectRatio = this.applyAspectRatio.bind(this);
+    this.renderState = this.renderState.bind(this);
   }
 
   private open(): void {
@@ -1198,6 +1199,24 @@ export class CropArea {
       this.rotationAngle = state.rotationAngle;
       this.applyRotation();
     }
+  }
+
+  /**
+   * Renders previously saved state without user intervention.
+   *
+   * The rendered image is returned to the `render` event handlers (as in the regular interactive process).
+   * Rendering options set on `CropArea` are respected.
+   *
+   * @param state state to render
+   * @since 1.4.0
+   */
+  public renderState(state: CropAreaState): void {
+    this.displayMode = 'inline';
+    if (!this.isOpen) {
+      this.show();
+    }
+    this.restoreState(state);
+    this.startRenderAndClose();    
   }
 
   private clientToLocalCoordinates(x: number, y: number): IPoint {

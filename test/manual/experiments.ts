@@ -19,6 +19,7 @@ export class Experiments {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.ca.addRenderEventListener((dataUrl: string, state: CropAreaState) => {
+      this.savedState = state;
       const res = document.createElement('img');
       res.src = dataUrl;
       document.body.appendChild(res);
@@ -110,6 +111,25 @@ export class Experiments {
       this.ca.startRenderAndClose();
     }
   }
+
+  public renderState(target: HTMLImageElement): void {
+    if (this.savedState) {
+      this.ca = new CropArea(target);
+
+      this.ca.renderAtNaturalSize = true;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      this.ca.addRenderEventListener((dataUrl: string, state: CropAreaState) => {
+        const res = document.createElement('img');
+        res.src = dataUrl;
+        document.body.appendChild(res);
+        this.savedState = state;
+      });
+      this.ca.addCloseEventListener(() => console.log('close'));
+
+      this.ca.renderState(this.savedState);
+    }
+  }
+
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -130,5 +150,8 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('renderButton').addEventListener('click', () => {
     experiments.renderAndClose();
+  });
+  document.getElementById('renderStateButton').addEventListener('click', () => {
+    experiments.renderState(targetImg);
   });
 });
