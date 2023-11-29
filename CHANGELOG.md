@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2023-11-29
+### Added
+- `renderMaxSize` setting to control the maximum rendered image threshold.
+iOS Safari can't handle rendering canvases larger than 2^24 (width * height). This setting can be used to mitigate this by down-scaling larger images.
+
+### Fixed
+- failure to render the result in Safari on iOS/iPadOS. See `renderMaxSize` for a mitigation.
+- typos
+
 ## [1.4.0] - 2023-09-30
 ### Added
 - `renderState()`` method to render previously saved state without user interaction
@@ -92,6 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial public release.
 
+[1.5.0]: https://github.com/ailon/cropro/releases/tag/v1.5.0
 [1.4.0]: https://github.com/ailon/cropro/releases/tag/v1.4.0
 [1.3.0]: https://github.com/ailon/cropro/releases/tag/v1.3.0
 [1.2.4]: https://github.com/ailon/cropro/releases/tag/v1.2.4
