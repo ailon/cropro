@@ -34,8 +34,10 @@ export class Experiments {
     // ca.displayMode = 'popup';
 
     this.ca.renderAtNaturalSize = true;
-    // ca.renderWidth = 640;
-    // ca.renderHeight = 480;
+    this.ca.renderMaxSize = Math.pow(2, 24);
+    // this.ca.renderMaxSize = Math.pow(2, 16);
+    // this.ca.renderWidth = 4120;
+    // this.ca.renderHeight = 4120;
     this.ca.renderImageType = 'image/jpeg';
 
     this.ca.styles.settings.zIndex = '2000';

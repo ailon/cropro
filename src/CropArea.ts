@@ -262,6 +262,21 @@ export class CropArea {
   public renderHeight?: number;
 
   /**
+   * When set the total area of the rendered image (width * height) will be limited to the specified value.
+   * The rendered image width and height will be scaled down proportionally to fit the specified size.
+   * 
+   * @remarks
+   * Some browsers (iOS Safari, for example) have a limit on the size of the image 
+   * that can be rendered. When this limit is exceeded the rendering will fail.
+   * At the time this setting was added this limit was 16777216 pixels (4096 x 4096).
+   * 
+   * You should set this setting if you expect users to edit large images on iOS devices.
+   * 
+   * @since 1.5.0
+   */
+  public renderMaxSize?: number;
+
+  /**
    * Display mode.
    * `inline` for cropping right on top of the original image,
    * `popup` for a full-screen experience.
@@ -1356,6 +1371,7 @@ export class CropArea {
     renderer.imageQuality = this.renderImageQuality;
     renderer.width = this.renderWidth;
     renderer.height = this.renderHeight;
+    renderer.maxSize = this.renderMaxSize;
 
     this.unzoomFromCrop();
     SvgHelper.setAttributes(this.cropLayerContainer, [['display', 'none']]);
