@@ -15,7 +15,7 @@ import CheckIcon from './assets/toolbar-icons/check.svg';
 import CloseIcon from './assets/toolbar-icons/close.svg';
 import RotateLeftIcon from './assets/toolbar-icons/rotate-left.svg';
 import RotateRightIcon from './assets/toolbar-icons/rotate-right.svg';
-import FlipHotizontalIcon from './assets/toolbar-icons/flip-horizontal.svg';
+import FlipHorizontalIcon from './assets/toolbar-icons/flip-horizontal.svg';
 import FlipVerticalIcon from './assets/toolbar-icons/flip-vertical.svg';
 import LogoIcon from './assets/cropro-logo-white-square.svg';
 import { AspectRatioIconGenerator } from './core/AspectRatioIconGenerator';
@@ -92,7 +92,7 @@ export class CropArea {
   }
 
   /**
-   * Manage style releated settings via the `styles` property.
+   * Manage style related settings via the `styles` property.
    */
   public styles: StyleManager;
 
@@ -129,7 +129,7 @@ export class CropArea {
 
   private _isGridVisible = true;
   /**
-   * Get whether alginment grid is visible.
+   * Get whether alignment grid is visible.
    * When set to true alignment grid is shown, hidden otherwise.
    */
   public get isGridVisible(): boolean {
@@ -197,7 +197,7 @@ export class CropArea {
    */
   public targetRoot: HTMLElement;
 
-  // for preserving orginal window state before opening the editor
+  // for preserving original window state before opening the editor
   private bodyOverflowState: string;
   private scrollYState: number;
   private scrollXState: number;
@@ -241,7 +241,7 @@ export class CropArea {
    */
   public renderImageType = 'image/png';
   /**
-   * When rendering engine/format supports it (jpeg, for exmample),
+   * When rendering engine/format supports it (jpeg, for example),
    * sets the rendering quality for the resulting image.
    *
    * In case of `image/jpeg` the value should be between 0 (worst quality) and 1 (best quality).
@@ -339,7 +339,7 @@ export class CropArea {
   public uiOffsetTop?: number;
 
   /**
-   * If set, the UI will be offset by the specefied number of pixels on the left.
+   * If set, the UI will be offset by the specified number of pixels on the left.
    *
    * @since 1.3.0
    */
@@ -1116,7 +1116,7 @@ export class CropArea {
     this.bottomToolbar.addButtonBlock(flipBlock);
 
     const flipHorButton = new ToolbarButton(
-      FlipHotizontalIcon,
+      FlipHorizontalIcon,
       'Flip horizontal'
     );
     flipHorButton.onClick = this.flipHorizontallyButtonClicked;
