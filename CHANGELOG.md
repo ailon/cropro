@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2023-12-11
+### Added
+- `aria-label`, `role`, and `data-action` attributes to toolbar controls
+
 ## [1.5.0] - 2023-11-29
 ### Added
 - `renderMaxSize` setting to control the maximum rendered image threshold.
@@ -101,6 +105,7 @@ iOS Safari can't handle rendering canvases larger than 2^24 (width * height). Th
 ### Added
 - Initial public release.
 
+[1.5.1]: https://github.com/ailon/cropro/releases/tag/v1.5.1
 [1.5.0]: https://github.com/ailon/cropro/releases/tag/v1.5.0
 [1.4.0]: https://github.com/ailon/cropro/releases/tag/v1.4.0
 [1.3.0]: https://github.com/ailon/cropro/releases/tag/v1.3.0
