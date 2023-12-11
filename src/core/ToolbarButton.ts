@@ -85,6 +85,9 @@ export class ToolbarButton {
   public getUI(): HTMLElement {
     this.buttonContainer = document.createElement('div');
     this.buttonContainer.title = this.title;
+    this.buttonContainer.setAttribute('role', 'button');
+    this.buttonContainer.setAttribute('aria-label', this.title);
+    this.buttonContainer.setAttribute('data-action', this.title);
     this.buttonContainer.className = `${this.className} ${this.colorsClassName}`;
     this.adjustClassName();
     this.buttonContainer.innerHTML = this._icon;

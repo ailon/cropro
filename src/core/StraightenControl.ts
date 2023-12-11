@@ -81,6 +81,10 @@ export class StraightenControl {
   public getUI(): HTMLElement {
     this.controlContainer = document.createElement('div');
     this.controlContainer.title = this.title;
+    this.controlContainer.setAttribute('role', 'button');
+    this.controlContainer.setAttribute('aria-label', this.title);
+    this.controlContainer.setAttribute('data-action', this.title);
+
     this.controlContainer.className = `${this.className} ${this.colorsClassName}`;
     this.controlContainer.appendChild(this.getVisual());
 
