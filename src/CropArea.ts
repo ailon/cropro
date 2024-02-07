@@ -38,6 +38,13 @@ export type RenderEventHandler = (
 export type CloseEventHandler = () => void;
 
 /**
+ * Event handler type for {@linkcode CropArea} `statechange` event.
+ * 
+ * @since 1.6.0
+ */
+export type StateChangeEventHandler = (state: CropAreaState) => void;
+
+/**
  * CROPRO display mode - `inline` or `popup` (full screen).
  */
 export type DisplayMode = 'inline' | 'popup';
@@ -167,6 +174,7 @@ export class CropArea {
     if (this.straightener) {
       this.straightener.angle = this._rotationAngle;
     }
+    this.onStateChanged();
   }
 
   private scaleFactor = 1.0;
@@ -204,6 +212,7 @@ export class CropArea {
 
   private renderEventListeners: RenderEventHandler[] = [];
   private closeEventListeners: CloseEventHandler[] = [];
+  private stateChangeEventListeners: StateChangeEventHandler[] = [];
 
   private _isOpen = false;
 
@@ -398,6 +407,9 @@ export class CropArea {
     this.onPopupResize = this.onPopupResize.bind(this);
     this.applyAspectRatio = this.applyAspectRatio.bind(this);
     this.renderState = this.renderState.bind(this);
+    this.addStateChangeEventListener = this.addStateChangeEventListener.bind(this);
+    this.removeStateChangeEventListener = this.removeStateChangeEventListener.bind(this);
+    this.onStateChanged = this.onStateChanged.bind(this);
   }
 
   private open(): void {
@@ -507,6 +519,34 @@ export class CropArea {
     }
   }
 
+  /**
+   * Add a `statechange` event handler to perform actions in your code after
+   * the state of the CropArea changes.
+   *
+   * @param listener - state change event listener
+   * 
+   * @since 1.6.0
+   */
+  public addStateChangeEventListener(listener: StateChangeEventHandler): void {
+    this.stateChangeEventListeners.push(listener);
+  }
+
+  /**
+   * Remove a `statechange` event handler.
+   *
+   * @param listener - previously registered `statechange` event handler.
+   * 
+   * @since 1.6.0
+   */
+  public removeStateChangeEventListener(listener: StateChangeEventHandler): void {
+    if (this.stateChangeEventListeners.indexOf(listener) > -1) {
+      this.stateChangeEventListeners.splice(
+        this.stateChangeEventListeners.indexOf(listener),
+        1
+      );
+    }
+  }
+
   private setupResizeObserver() {
     if (this.displayMode === 'inline') {
       if (window.ResizeObserver) {
@@ -588,6 +628,8 @@ export class CropArea {
 
     this.cropLayer.scaleCanvas(this.imageWidth, this.imageHeight);
     this.applyRotation();
+
+    this.onStateChanged();
   }
 
   // not sure why initial pre-rendering of the original image was added.
@@ -769,6 +811,7 @@ export class CropArea {
     } else {
       this.cropLayer.zoomFactor = 1;
     }
+    this.onStateChanged();
   }
 
   private attachEvents() {
@@ -1155,6 +1198,7 @@ export class CropArea {
       } else {
         this.cropLayer.aspectRatio = undefined;
       }
+      this.onStateChanged();
     }
   }
 
@@ -1213,6 +1257,8 @@ export class CropArea {
       this.applyFlip();
       this.rotationAngle = state.rotationAngle;
       this.applyRotation();
+
+      this.onStateChanged();
     }
   }
 
@@ -1350,6 +1396,8 @@ export class CropArea {
     this.editingTarget.style.transform = `scale(${
       this.flippedHorizontally ? -1 : 1
     },${this.flippedVertically ? -1 : 1})`;
+
+    this.onStateChanged();
   }
 
   /**
@@ -1409,6 +1457,16 @@ export class CropArea {
     this.processingUi.style.display = 'none';
 
     return result;
+  }
+
+  private previousState = '';
+  private onStateChanged() {
+    const state = this.getState();
+    const stringState = JSON.stringify(state);
+    if (this.previousState !== stringState) {
+      this.stateChangeEventListeners.forEach((listener) => listener(state));
+      this.previousState = stringState;
+    }
   }
 
   private addStyles() {

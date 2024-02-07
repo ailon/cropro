@@ -53,6 +53,14 @@ export class Experiments {
       this.savedState = state;
     });
     this.ca.addCloseEventListener(() => console.log('close'));
+    this.ca.addStateChangeEventListener((state: CropAreaState) => { 
+      console.log(state);
+      if (state.rotationAngle !== 0) {
+        this.ca.renderImageType = 'image/png';
+      } else {
+        this.ca.renderImageType = 'image/jpeg';
+      }
+    });
     this.ca.show();
     if (this.savedState) {
       this.ca.restoreState(this.savedState);
